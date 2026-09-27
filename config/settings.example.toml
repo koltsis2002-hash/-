@@ -1,0 +1,12 @@
+# Copy to config/settings.toml (git-ignored) to override defaults.
+# Relative paths: data_dir is relative to the project root; the others to data_dir.
+# Environment variables JARVIS_DATA_DIR, JARVIS_DB_PATH, JARVIS_BACKUP_DIR,
+# JARVIS_HOST, JARVIS_PORT and JARVIS_CONFIG take precedence over this file.
+# Never put credentials here; future integration secrets go in .env (git-ignored).
+
+data_dir = "data"
+db_path = "database/jarvis.db"
+backup_dir = "backups"
+knowledge_dir = "knowledge/products"
+host = "127.0.0.1"
+port = 8765

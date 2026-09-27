@@ -6,28 +6,34 @@ This file provides guidance for AI assistants (Claude and others) working in thi
 
 ## Repository Status
 
-This repository is newly initialized and currently empty. This CLAUDE.md serves as the foundational conventions document. Update it as the codebase grows.
+JARVIS — Phase 0 + Phase 1 (local core) implemented. See `PROJECT_STATUS.md` for the current phase, decisions and next step.
 
 ---
 
 ## Project Overview
 
-> **TODO:** Fill in once the project has a defined purpose.
->
-> - **What it does:** ...
-> - **Primary language(s):** ...
-> - **Key dependencies:** ...
+- **What it does:** JARVIS, a local-first, single-user assistant for a financial & insurance advisor (CRM, planner, KPIs/goals, product knowledge, prospecting). The spec is `docs/JARVIS_Master_Implementation_Plan_v1.docx` and is the source of truth.
+- **Primary language(s):** Python 3.11+
+- **Key dependencies:** standard library only at runtime (sqlite3, http.server); pytest for tests
+- **Core rule:** JARVIS proposes → user reviews → user confirms → system executes. Work one phase at a time and update `PROJECT_STATUS.md` at the end of each session.
 
 ---
 
 ## Repository Structure
 
-> **TODO:** Update this section as directories and files are added.
-
 ```
 /
-├── CLAUDE.md          # This file — AI assistant guidance
-└── ...                # Project files to be added
+├── CLAUDE.md             # This file — AI assistant guidance
+├── PROJECT_STATUS.md     # Current phase, decisions, blockers, next step
+├── app/                  # Application package (`python -m app`)
+│   ├── core/             # DB connection, migrations/*.sql, backup, base Repository, sample data
+│   ├── crm/ planner/ analytics/   # Domain repositories and services
+│   ├── ui/               # Local web UI (business logic stays out of here)
+│   └── knowledge/ prospecting/ voice/ integrations/   # Later phases
+├── config/               # settings.example.toml (settings.toml is git-ignored)
+├── data/                 # Local DB, backups, product PDFs — git-ignored
+├── docs/                 # Specification
+└── tests/                # pytest suite
 ```
 
 ---
@@ -61,15 +67,10 @@ Do **not** include AI session URLs, task IDs, or issue references in the subject
 
 ### Testing
 
-> **TODO:** Document the test runner, test file locations, and how to run tests once they exist.
-
-Run tests before committing:
+Tests live in `tests/` and use pytest with temporary databases (never the real `data/`). Run before committing:
 
 ```bash
-# Example — replace with actual commands once defined
-npm test        # Node.js projects
-pytest          # Python projects
-go test ./...   # Go projects
+python -m pytest
 ```
 
 ---
@@ -99,35 +100,34 @@ go test ./...   # Go projects
 
 ### File Naming
 
-> **TODO:** Define conventions once the primary language is chosen (e.g., `snake_case.py`, `camelCase.js`, `kebab-case.ts`).
+`snake_case.py` modules; SQL migrations are `app/core/migrations/NNNN_description.sql` and are never edited once released — add a new one instead.
 
 ---
 
 ## Environment Setup
 
-> **TODO:** Document setup steps once the project stack is defined.
-
 ```bash
-# Clone
 git clone https://github.com/koltsis2002-hash/-.git
 cd -
-
-# Install dependencies (example)
-# npm install / pip install -r requirements.txt / go mod download
-
-# Run locally (example)
-# npm start / python main.py / go run .
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python -m app init && python -m app seed   # fictional sample data
+python -m app                              # http://127.0.0.1:8765
 ```
 
 ---
 
 ## Key Files & Entry Points
 
-> **TODO:** List important files once the project has content.
-
 | File/Directory | Purpose |
 |----------------|---------|
-| *(empty)*      | *(to be filled in)* |
+| `app/__main__.py` | CLI entry point: init, seed, backup, restore, serve |
+| `app/config.py` | Settings from `config/settings.toml` + `JARVIS_*` env vars |
+| `app/core/db.py` | Connection setup (foreign keys, Greek-aware search function) and migration runner |
+| `app/core/repository.py` | Base CRUD repository used by all entity repositories |
+| `app/core/backup.py` | Verified backup and restore |
+| `app/ui/server.py` | Local UI: dashboard and contacts |
+| `PROJECT_STATUS.md` | Where the project is and what comes next |
 
 ---
 

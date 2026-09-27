@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Local secrets and personal configuration
+.env
+.env.*
+config/settings.toml
+
+# Local data never goes to Git
+data/database/*
+data/backups/*
+data/knowledge/products/*
+!data/**/.gitkeep
