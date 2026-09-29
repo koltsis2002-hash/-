@@ -6,7 +6,7 @@ This file provides guidance for AI assistants (Claude and others) working in thi
 
 ## Repository Status
 
-JARVIS — Phase 0 + Phase 1 (local core) implemented. See `PROJECT_STATUS.md` for the current phase, decisions and next step.
+JARVIS — Phase 1 (local core and database) implemented. See `PROJECT_STATUS.md` for the current phase, decisions and next step.
 
 ---
 
@@ -26,12 +26,14 @@ JARVIS — Phase 0 + Phase 1 (local core) implemented. See `PROJECT_STATUS.md` f
 ├── CLAUDE.md             # This file — AI assistant guidance
 ├── PROJECT_STATUS.md     # Current phase, decisions, blockers, next step
 ├── app/                  # Application package (`python -m app`)
-│   ├── core/             # DB connection, migrations/*.sql, backup, base Repository, sample data
-│   ├── crm/ planner/ analytics/   # Domain repositories and services
-│   ├── ui/               # Local web UI (business logic stays out of here)
-│   └── knowledge/ prospecting/ voice/ integrations/   # Later phases
+│   ├── core/             # Settings, errors, time helpers
+│   ├── models/           # Dataclass entities
+│   ├── database/         # Connection, migrations/*.sql, repositories (only SQL here), backup
+│   ├── services/         # Business logic used by UI and CLI
+│   └── ui/               # Local web UI — imports services only (enforced by tests/test_app.py)
 ├── config/               # settings.example.toml (settings.toml is git-ignored)
-├── data/                 # Local DB, backups, product PDFs — git-ignored
+├── data/                 # Local DB — git-ignored
+├── backups/              # Backups — git-ignored
 ├── docs/                 # Specification
 └── tests/                # pytest suite
 ```
@@ -100,7 +102,7 @@ python -m pytest
 
 ### File Naming
 
-`snake_case.py` modules; SQL migrations are `app/core/migrations/NNNN_description.sql` and are never edited once released — add a new one instead.
+`snake_case.py` modules; SQL migrations are `app/database/migrations/NNNN_description.sql` and are never edited once released — add a new one instead.
 
 ---
 
@@ -121,11 +123,13 @@ python -m app                              # http://127.0.0.1:8765
 
 | File/Directory | Purpose |
 |----------------|---------|
-| `app/__main__.py` | CLI entry point: init, seed, backup, restore, serve |
-| `app/config.py` | Settings from `config/settings.toml` + `JARVIS_*` env vars |
-| `app/core/db.py` | Connection setup (foreign keys, Greek-aware search function) and migration runner |
-| `app/core/repository.py` | Base CRUD repository used by all entity repositories |
-| `app/core/backup.py` | Verified backup and restore |
+| `app/__main__.py` | CLI entry point: init, status, seed, backup, restore, serve |
+| `app/core/config.py` | Settings from `config/settings.toml` + `JARVIS_*` env vars |
+| `app/models/entities.py` | Dataclasses and allowed values for all entities |
+| `app/database/connection.py` | Connection setup (foreign keys, Greek-aware search function) and migration runner |
+| `app/database/repositories.py` | CRUD and queries; the only module that runs SQL |
+| `app/database/backup.py` | Verified backup and restore |
+| `app/services/context.py` | `Services.open(db_path)` — what the UI and CLI use |
 | `app/ui/server.py` | Local UI: dashboard and contacts |
 | `PROJECT_STATUS.md` | Where the project is and what comes next |
 

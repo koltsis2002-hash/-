@@ -19,7 +19,7 @@ CREATE INDEX idx_contacts_status ON contacts (status);
 CREATE TABLE activities (
     id INTEGER PRIMARY KEY,
     contact_id INTEGER NOT NULL REFERENCES contacts (id) ON DELETE CASCADE,
-    type TEXT NOT NULL CHECK (type IN ('call', 'meeting', 'email', 'message', 'note')),
+    activity_type TEXT NOT NULL CHECK (activity_type IN ('call', 'meeting', 'email', 'message', 'note')),
     timestamp TEXT NOT NULL,
     outcome TEXT,
     notes TEXT,

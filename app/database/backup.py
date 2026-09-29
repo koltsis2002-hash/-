@@ -2,9 +2,7 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
-
-class BackupError(Exception):
-    pass
+from app.core.errors import BackupError
 
 
 def create_backup(conn, backup_dir, label="manual") -> Path:

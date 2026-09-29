@@ -2,7 +2,7 @@ import sqlite3
 import unicodedata
 from pathlib import Path
 
-from app.core.backup import create_backup
+from app.database.backup import create_backup
 
 MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 
@@ -49,7 +49,14 @@ def migrate(conn, backup_dir=None) -> list[int]:
     return [v for v, _ in pending]
 
 
-def open_database(settings) -> sqlite3.Connection:
-    conn = connect(settings.db_path)
-    migrate(conn, backup_dir=settings.backup_dir)
+def open_database(db_path, backup_dir=None) -> sqlite3.Connection:
+    conn = connect(db_path)
+    migrate(conn, backup_dir=backup_dir)
     return conn
+
+
+def table_counts(conn) -> dict[str, int]:
+    tables = [r[0] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+    )]
+    return {t: conn.execute(f'SELECT COUNT(*) FROM "{t}"').fetchone()[0] for t in tables}

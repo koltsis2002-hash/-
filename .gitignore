@@ -1,16 +1,20 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
 .pytest_cache/
 .venv/
 venv/
 
-# Local secrets and personal configuration
+# macOS
+.DS_Store
+
+# Secrets and personal configuration
 .env
 .env.*
 config/settings.toml
 
-# Local data never goes to Git
-data/database/*
-data/backups/*
-data/knowledge/products/*
-!data/**/.gitkeep
+# Local data and backups never go to Git
+data/*
+backups/*
+!data/.gitkeep
+!backups/.gitkeep
