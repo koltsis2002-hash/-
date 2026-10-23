@@ -6,28 +6,28 @@ This file provides guidance for AI assistants (Claude and others) working in thi
 
 ## Repository Status
 
-This repository is newly initialized and currently empty. This CLAUDE.md serves as the foundational conventions document. Update it as the codebase grows.
+The repository holds the 2026 business-insurance brochure of Χρήστος Κόλτσης (Insurance & Financial Advisor), kept as HTML/CSS and printed to PDF.
 
 ---
 
 ## Project Overview
 
-> **TODO:** Fill in once the project has a defined purpose.
->
-> - **What it does:** ...
-> - **Primary language(s):** ...
-> - **Key dependencies:** ...
+- **What it does:** Source and print pipeline for the Greek A4 brochure «Επιχειρηματική Ασφάλιση & Στρατηγικός Σχεδιασμός 2026».
+- **Primary language(s):** HTML/CSS (Greek content), a small Node.js build script.
+- **Key dependencies:** `playwright-core` (prints the PDF with Chromium), `@fontsource/noto-sans` and `@fontsource/noto-sans-display` (embedded fonts).
 
 ---
 
 ## Repository Structure
 
-> **TODO:** Update this section as directories and files are added.
-
 ```
 /
-├── CLAUDE.md          # This file — AI assistant guidance
-└── ...                # Project files to be added
+├── CLAUDE.md                                # This file — AI assistant guidance
+└── brochure-2026/
+    ├── index.html                           # All 10 A4 pages, inline CSS
+    ├── assets/logo-full.png, logo-mark.png  # Transparent logos
+    ├── build.mjs                            # Renders index.html to PDF, fails if a page overflows
+    └── Epixeirimatiki-Asfalisi-2026.pdf     # Built output (committed)
 ```
 
 ---
@@ -61,16 +61,17 @@ Do **not** include AI session URLs, task IDs, or issue references in the subject
 
 ### Testing
 
-> **TODO:** Document the test runner, test file locations, and how to run tests once they exist.
-
-Run tests before committing:
+There is no test suite. After changing the brochure, rebuild it and check the result:
 
 ```bash
-# Example — replace with actual commands once defined
-npm test        # Node.js projects
-pytest          # Python projects
-go test ./...   # Go projects
+cd brochure-2026
+npm install
+node build.mjs                                  # throws if any page overflows A4
+pdfinfo Epixeirimatiki-Asfalisi-2026.pdf        # expect 10 A4 pages
+pdftoppm -r 70 -png Epixeirimatiki-Asfalisi-2026.pdf /tmp/p   # inspect pages visually
 ```
+
+Outside the cloud container, Chromium for Playwright may need `npx playwright install chromium` first.
 
 ---
 
@@ -99,35 +100,29 @@ go test ./...   # Go projects
 
 ### File Naming
 
-> **TODO:** Define conventions once the primary language is chosen (e.g., `snake_case.py`, `camelCase.js`, `kebab-case.ts`).
+- Brochure sources use `kebab-case`; the PDF name is the transliterated Greek title.
+- Greek all-caps text (eyebrows, cover title) is typed in capitals without accents; do not rely on `text-transform: uppercase`, which keeps the tonos.
 
 ---
 
 ## Environment Setup
 
-> **TODO:** Document setup steps once the project stack is defined.
-
 ```bash
-# Clone
 git clone https://github.com/koltsis2002-hash/-.git
-cd -
-
-# Install dependencies (example)
-# npm install / pip install -r requirements.txt / go mod download
-
-# Run locally (example)
-# npm start / python main.py / go run .
+cd -/brochure-2026
+npm install
+node build.mjs
 ```
 
 ---
 
 ## Key Files & Entry Points
 
-> **TODO:** List important files once the project has content.
-
 | File/Directory | Purpose |
 |----------------|---------|
-| *(empty)*      | *(to be filled in)* |
+| `brochure-2026/index.html` | Brochure content and layout |
+| `brochure-2026/build.mjs` | PDF build with overflow check |
+| `brochure-2026/Epixeirimatiki-Asfalisi-2026.pdf` | Final brochure to share |
 
 ---
 
