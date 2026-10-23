@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>Επιχειρηματική Ασφάλιση & Στρατηγικός Σχεδιασμός 2026 – Χρήστος Κόλτσης</title>
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans/700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-display/700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-display/800.css">
+<style>
+  :root {
+    --orange: #f26400;
+    --ink: #16181b;
+    --text: #4a4e55;
+    --muted: #6b7078;
+    --dark: #2e3035;
+    --dark-2: #3a3d43;
+    --card: #f4f3f1;
+    --peach: #fdeee4;
+    --peach-line: #f6d2bb;
+    --numeral: #f3c3a0;
+    --rule: #dcdcdc;
+  }
+
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #8a8d92; }
+  body {
+    font-family: "Noto Sans", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: var(--text);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  h1, h2, h3, .display { font-family: "Noto Sans Display", "Noto Sans", sans-serif; color: var(--ink); }
+  a { color: inherit; text-decoration: none; }
+
+  .page {
+    position: relative;
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto 8mm;
+    padding: 17mm 18mm 11mm;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #fff;
+    break-after: page;
+  }
+  .page:last-child { break-after: auto; margin-bottom: 0; }
+  @media print { .page { margin: 0; } html, body { background: #fff; } }
+
+  .head { display: grid; grid-template-columns: 1fr auto; column-gap: 8mm; }
+  .eyebrow {
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: .2em;
+    color: var(--orange);
+    margin-bottom: 4mm;
+  }
+  .head h1 {
+    font-size: 25pt;
+    font-weight: 700;
+    line-height: 1.14;
+    letter-spacing: -.005em;
+    text-wrap: balance;
+    margin-bottom: 4.5mm;
+  }
+  .lead { font-size: 11.5pt; line-height: 1.5; color: var(--muted); max-width: 150mm; }
+  .num {
+    font-family: "Noto Sans Display", sans-serif;
+    font-weight: 800;
+    font-size: 40pt;
+    line-height: 1;
+    color: var(--numeral);
+  }
+
+  .body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 7mm;
+    padding: 10mm 0 8mm;
+  }
+
+  .card { background: var(--card); border-radius: 2.5mm; padding: 6.5mm 8mm; }
+  .card .eyebrow { font-size: 7.5pt; margin-bottom: 3mm; }
+  .card h3 { font-size: 14.5pt; font-weight: 700; line-height: 1.25; margin-bottom: 2mm; }
+  .card p { font-size: 10.5pt; }
+
+  .banner {
+    background: var(--dark);
+    color: #fff;
+    border-radius: 2.5mm;
+    padding: 7mm 10mm;
+    text-align: center;
+    font-weight: 700;
+    font-size: 12.5pt;
+    line-height: 1.4;
+    text-wrap: balance;
+  }
+  .callout-orange {
+    background: var(--orange);
+    color: #fff;
+    border-radius: 2.5mm;
+    padding: 7mm 12mm;
+    text-align: center;
+    font-weight: 700;
+    font-size: 13pt;
+    line-height: 1.4;
+    text-wrap: balance;
+  }
+  .statement {
+    font-family: "Noto Sans Display", "Noto Sans", sans-serif;
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 18pt;
+    line-height: 1.3;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-top: .3mm solid var(--rule);
+    padding-top: 3mm;
+    font-size: 8pt;
+    color: var(--muted);
+  }
+  .foot .pg { font-weight: 700; color: var(--orange); font-size: 9pt; }
+  .foot .sep { margin: 0 2mm; }
+
+  .bullets { list-style: none; display: grid; gap: 6mm; }
+  .bullets li { display: grid; grid-template-columns: 6mm 1fr; align-items: baseline; }
+  .bullets li::before {
+    content: "";
+    width: 2.4mm;
+    height: 2.4mm;
+    border-radius: 50%;
+    background: var(--orange);
+    transform: translateY(-.4mm);
+  }
+
+  /* Cover */
+  .cover { padding: 0; flex-direction: row; }
+  .cover-left {
+    flex: 0 0 58.5%;
+    padding: 20mm 14mm 16mm 18mm;
+    display: flex;
+    flex-direction: column;
+  }
+  .cover-year { font-size: 11pt; font-weight: 700; letter-spacing: .2em; color: var(--orange); }
+  .cover h1 {
+    margin-top: 30mm;
+    font-size: 31pt;
+    font-weight: 700;
+    line-height: 1.16;
+    letter-spacing: -.005em;
+  }
+  .cover-sub { margin-top: 30mm; font-size: 13pt; line-height: 1.45; color: var(--muted); max-width: 100mm; }
+  .cover-bar { margin-top: 12mm; width: 76mm; height: 1.6mm; background: var(--orange); }
+  .cover-tags { margin-top: 7mm; font-size: 8.5pt; font-weight: 700; letter-spacing: .14em; color: var(--ink); }
+  .cover-logo { margin-top: auto; width: 82mm; align-self: center; }
+  .cover-right {
+    position: relative;
+    flex: 1;
+    background: var(--dark);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    text-align: right;
+    padding: 0 18mm 24mm 10mm;
+  }
+  .cover-stripes { position: absolute; top: 0; left: -4.5mm; width: 50mm; height: 98mm; }
+  .cover-name { font-family: "Noto Sans Display", sans-serif; font-size: 16pt; font-weight: 700; }
+  .cover-role { margin-top: 2mm; font-size: 9.5pt; color: #d4d6da; }
+  .cover-note { margin-top: 18mm; font-size: 8.5pt; line-height: 1.45; color: #b9bcc2; max-width: 60mm; }
+
+  /* Page 2 */
+  .stripes-small { width: 26mm; height: 52mm; margin-top: -7mm; }
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; }
+  .pillars .card { padding: 7mm 6.5mm 8mm; }
+  .pillars .eyebrow { margin-bottom: 4mm; }
+  .pillars h3 { font-size: 14.5pt; margin-bottom: 3mm; }
+  .pillars p { font-size: 10pt; }
+
+  /* Page 4 */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+
+  /* Page 5 */
+  .page-warm { background: #faf9f7; }
+  .gap-layout { display: grid; grid-template-columns: 66mm 1fr; column-gap: 12mm; align-items: center; }
+  .gap-circle {
+    width: 62mm;
+    height: 62mm;
+    border-radius: 50%;
+    background: var(--dark);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4mm;
+  }
+  .gap-circle img { width: 30mm; }
+  .gap-circle span { color: #fff; font-weight: 700; font-size: 11pt; line-height: 1.25; text-align: center; letter-spacing: .04em; }
+  .gap-layout .bullets { gap: 8mm; font-size: 11pt; color: var(--ink); }
+  .role-box { background: #fff; border: .3mm solid var(--rule); border-radius: 2.5mm; padding: 8mm 10mm; }
+  .role-box h3 { color: var(--orange); font-size: 14pt; margin-bottom: 3mm; }
+
+  /* Page 6 */
+  .steps { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 4mm; text-align: center; }
+  .steps::before {
+    content: "";
+    position: absolute;
+    top: 9mm;
+    left: 12.5%;
+    right: 12.5%;
+    height: .8mm;
+    background: #e2e2e2;
+  }
+  .step-dot {
+    position: relative;
+    width: 18mm;
+    height: 18mm;
+    margin: 0 auto 5mm;
+    border-radius: 50%;
+    background: var(--dark);
+    color: #fff;
+    font-weight: 700;
+    font-size: 12pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-dot.hot { background: var(--orange); }
+  .steps h3 { font-family: "Noto Sans", sans-serif; font-size: 12pt; margin-bottom: 2mm; }
+  .steps p { font-size: 10pt; line-height: 1.45; color: var(--muted); }
+  .note { display: grid; grid-template-columns: 30mm 1fr; column-gap: 4mm; background: var(--peach); border-radius: 2.5mm; padding: 8mm 10mm; }
+  .note strong { color: var(--orange); font-size: 12pt; line-height: 1.35; }
+
+  /* Pages 7 & 9 */
+  .rows { display: grid; }
+  .rows .row { display: grid; grid-template-columns: 16mm 58mm 1fr; column-gap: 4mm; align-items: baseline; padding: 8mm 0; border-bottom: .3mm solid var(--rule); }
+  .rows .row:first-child { padding-top: 0; }
+  .rows .row:last-child { border-bottom: 0; padding-bottom: 0; }
+  .row-num { font-weight: 700; font-size: 13pt; color: var(--orange); }
+  .row h3 { font-family: "Noto Sans", sans-serif; font-size: 13pt; line-height: 1.3; }
+  .row p { font-size: 10.5pt; color: var(--muted); }
+  .process { display: grid; gap: 6mm; }
+  .process .row { display: grid; grid-template-columns: 14mm 56mm 1fr; column-gap: 5mm; align-items: baseline; background: var(--card); border-radius: 2.5mm; padding: 10mm 9mm; }
+  .process .row.first { background: var(--peach); border: .3mm solid var(--peach-line); }
+
+  /* Dark pages */
+  .page-dark { background: var(--dark); color: #d4d6da; }
+  .page-dark h1, .page-dark h2 { color: #fff; }
+  .page-dark .lead { color: #c9ccd1; }
+  .page-dark .foot { border-top-color: #4a4d53; color: #a9adb3; }
+  .page-dark .num { color: var(--orange); font-size: 26pt; text-align: right; }
+  .brand-col { display: flex; flex-direction: column; align-items: flex-end; gap: 7mm; }
+  .brand-col img { width: 24mm; }
+  .tax-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm; }
+  .tax-card { border-radius: 2.5mm; padding: 8mm 8mm 9mm; }
+  .tax-card.now { background: var(--dark-2); border: .3mm solid #4c5056; }
+  .tax-card.next { background: var(--orange); color: #fff; }
+  .tax-card p { font-size: 9.5pt; line-height: 1.5; }
+  .tax-card.now p { color: #c9ccd1; }
+  .tax-card p.when { font-weight: 700; font-size: 12pt; color: var(--orange); }
+  .tax-card.next p.when { color: #fff; }
+  .tax-card p.big { font-family: "Noto Sans Display", sans-serif; font-weight: 800; font-size: 32pt; line-height: 1.1; color: #fff; margin: 4mm 0 4mm; }
+  .check-box { background: #f6f5f2; color: var(--ink); border-radius: 2.5mm; padding: 9mm 10mm 10mm; }
+  .check-box h2 { color: var(--ink); font-size: 14pt; margin-bottom: 6mm; }
+  .check-box .bullets { gap: 5mm; font-size: 10.5pt; }
+  .disclaimer { font-size: 8.5pt; line-height: 1.5; text-align: center; color: #a9adb3; text-wrap: balance; }
+
+  /* Back cover */
+  .back { align-items: center; padding-top: 20mm; }
+  .back-logo { width: 54mm; }
+  .back h1 { margin-top: 12mm; font-size: 23pt; line-height: 1.25; text-align: center; text-wrap: balance; max-width: 150mm; }
+  .questions { list-style: none; width: 150mm; margin-top: 12mm; }
+  .questions li { display: grid; grid-template-columns: 12mm 1fr; align-items: baseline; padding: 5mm 0; border-bottom: .3mm solid #4a4d53; font-size: 11pt; color: #e3e5e8; }
+  .questions li:last-child { border-bottom: 0; }
+  .questions b { color: var(--orange); font-size: 13pt; }
+  .cta { margin-top: auto; width: 100%; background: var(--orange); color: #fff; border-radius: 2.5mm; padding: 9mm 12mm; text-align: center; }
+  .cta h2 { color: #fff; font-size: 16pt; line-height: 1.3; text-wrap: balance; }
+  .cta p { margin-top: 4mm; font-size: 11pt; }
+  .cta .dot { margin: 0 3mm; }
+  .back-foot { margin-top: 10mm; text-align: center; }
+  .back-foot strong { color: #e3e5e8; font-size: 10pt; }
+  .back-foot p { margin-top: 3mm; font-size: 8pt; color: #8f939a; }
+</style>
+</head>
+<body>
+
+<!-- 01 · Εξώφυλλο -->
+<section class="page cover">
+  <div class="cover-left">
+    <p class="cover-year">2026</p>
+    <h1>ΕΠΙΧΕΙΡΗΜΑΤΙΚΗ<br>ΑΣΦΑΛΙΣΗ &amp;<br>ΣΤΡΑΤΗΓΙΚΟΣ<br>ΣΧΕΔΙΑΣΜΟΣ</h1>
+    <p class="cover-sub">Προστασία της επιχείρησης, των ανθρώπων της και της συνέχειάς της.</p>
+    <div class="cover-bar"></div>
+    <p class="cover-tags">BUSINESS RISK • PEOPLE • CONTINUITY</p>
+    <img class="cover-logo" src="assets/logo-full.png" alt="Κόλτσης Χρήστος – Insurance &amp; Financial Advisor">
+  </div>
+  <div class="cover-right">
+    <svg class="cover-stripes" viewBox="0 0 50 98" aria-hidden="true">
+      <polygon points="0,93 26,0 33,0 6.5,95" fill="#f26400"/>
+      <polygon points="17,66 37,0 41.5,0 21.5,67.5" fill="#5a5d63"/>
+    </svg>
+    <p class="cover-name">Χρήστος Κόλτσης</p>
+    <p class="cover-role">Insurance &amp; Financial Advisor</p>
+    <p class="cover-note">Ενημερωτικό έντυπο επιχειρηματικού σχεδιασμού</p>
+  </div>
+</section>
+
+<!-- 02 · Η προσέγγιση -->
+<section class="page">
+  <header class="head">
+    <div>
+      <p class="eyebrow">Η ΠΡΟΣΕΓΓΙΣΗ</p>
+      <h1>Η σωστή ασφάλιση ξεκινά από την επιχείρηση&nbsp;– όχι από το προϊόν.</h1>
+      <p class="lead">Κάθε επιχείρηση έχει διαφορετικές ταμειακές ροές, ανθρώπους-κλειδιά, υποχρεώσεις, συνεργασίες και σχέδια ανάπτυξης. Πρώτα χαρτογραφούμε τι μπορεί να προκαλέσει οικονομική ζημιά ή να διακόψει τη λειτουργία. Μετά επιλέγουμε τις λύσεις που έχουν πραγματική χρησιμότητα.</p>
+    </div>
+    <svg class="stripes-small" viewBox="0 0 26 52" aria-hidden="true">
+      <polygon points="0,50 16,0 21,0 5,52" fill="#f26400"/>
+      <polygon points="9,40 22,0 26,0 13,41.5" fill="#2e3035"/>
+    </svg>
+  </header>
+  <main class="body">
+    <div class="pillars">
+      <article class="card">
+        <p class="eyebrow">01</p>
+        <h3>Προστασία<br>επιχείρησης</h3>
+        <p>Αστική ευθύνη, περιουσία, εξοπλισμός, στόλος και κυβερνοκίνδυνοι. Στόχος είναι ένα απρόβλεπτο περιστατικό να μη μετατραπεί σε πρόβλημα ρευστότητας ή λειτουργίας.</p>
+      </article>
+      <article class="card">
+        <p class="eyebrow">02</p>
+        <h3>Άνθρωποι<br>&amp; παροχές</h3>
+        <p>Υγεία, ζωή, ατύχημα και παροχές εργαζομένων. Ο σχεδιασμός μπορεί να ενισχύσει την προστασία, τη διακράτηση προσωπικού και την εικόνα του εργοδότη.</p>
+      </article>
+      <article class="card">
+        <p class="eyebrow">03</p>
+        <h3>Συνέχεια<br>&amp; κεφάλαιο</h3>
+        <p>Key Person, συνέταιροι, επιχειρηματικό χρέος, διαδοχή και μακροπρόθεσμη δημιουργία κεφαλαίου. Στόχος είναι η επιχείρηση να έχει επιλογές όταν προκύψει το δύσκολο σενάριο.</p>
+      </article>
+    </div>
+    <p class="statement">Η συζήτηση δεν είναι «ποιο πρόγραμμα θέλετε;». Είναι «τι δεν θέλετε να θέσει σε κίνδυνο την επιχείρησή σας;»</p>
+    <p class="banner">Στόχος: προστασία με προτεραιότητες, όχι υπερασφάλιση.</p>
+  </main>
+  <footer class="foot"><span>Χρήστος Κόλτσης<span class="sep">|</span>Insurance &amp; Financial Advisor</span><span class="pg">02</span></footer>
+</section>
+
+<!-- 03 · Προστασία λειτουργίας -->
+<section class="page">
+  <header class="head">
+    <div>
+      <p class="eyebrow">ΠΡΟΣΤΑΣΙΑ ΛΕΙΤΟΥΡΓΙΑΣ</p>
+      <h1>Η καθημερινή λειτουργία έχει κινδύνους που δεν φαίνονται μέχρι να συμβούν.</h1>
+      <p class="lead">Η βάση ενός σωστού σχεδιασμού είναι να προστατεύσουμε πρώτα τα σημεία που μπορούν να δημιουργήσουν άμεση οικονομική απώλεια ή διακοπή εργασιών.</p>
+    </div>
+    <p class="num">01</p>
+  </header>
+  <main class="body">
+    <article class="card">
+      <p class="eyebrow">ΤΡΙΤΟΙ &amp; ΕΥΘΥΝΕΣ</p>
+      <h3>Αστική ευθύνη</h3>
+      <p>Αξιώσεις τρίτων από σωματική βλάβη, υλική ζημιά ή άλλη ευθύνη που συνδέεται με τη δραστηριότητα της επιχείρησης. Το εύρος κάλυψης εξαρτάται από τον κλάδο και τους όρους του συμβολαίου.</p>
+    </article>
+    <article class="card">
+      <p class="eyebrow">ΠΕΡΙΟΥΣΙΑ &amp; ΕΞΟΠΛΙΣΜΟΣ</p>
+      <h3>Εταιρική περιουσία</h3>
+      <p>Κτίρια, εξοπλισμός, μηχανήματα, εμπορεύματα και άλλα περιουσιακά στοιχεία μπορούν να προστατευθούν απέναντι σε συγκεκριμένους ασφαλιζόμενους κινδύνους, με κεφάλαια που ανταποκρίνονται στην πραγματική αξία και χρήση τους.</p>
+    </article>
+    <article class="card">
+      <p class="eyebrow">CYBER RISK</p>
+      <h3>Cyber &amp; δεδομένα</h3>
+      <p>Η ψηφιακή λειτουργία δημιουργεί κινδύνους από παραβίαση δεδομένων, κυβερνοεπίθεση, απώλεια συστημάτων και διακοπή εργασιών. Η κατάλληλη κάλυψη σχεδιάζεται σύμφωνα με το πραγματικό ψηφιακό αποτύπωμα της εταιρείας.</p>
+    </article>
+    <p class="banner">Ένα περιστατικό δεν πρέπει να μετατρέπεται σε κρίση ρευστότητας.</p>
+  </main>
+  <footer class="foot"><span>Χρήστος Κόλτσης<span class="sep">|</span>Insurance &amp; Financial Advisor</span><span class="pg">03</span></footer>
+</section>
+
+<!-- 04 · Άνθρωποι & employee benefits -->
+<section class="page">
+  <header class="head">
+    <div>
+      <p class="eyebrow">ΑΝΘΡΩΠΟΙ &amp; EMPLOYEE BENEFITS</p>
+      <h1>Οι παροχές προς το προσωπικό είναι ταυτόχρονα προστασία και εργαλείο HR.</h1>
+      <p class="lead">Όταν ο σχεδιασμός είναι σωστός, μια εταιρική παροχή δεν είναι απλώς «ένα ακόμα benefit». Μπορεί να υποστηρίξει την ασφάλεια των εργαζομένων, τη διακράτηση στελεχών και την ανταγωνιστικότητα της επιχείρησης ως εργοδότη.</p>
+    </div>
+    <p class="num">02</p>
+  </header>
+  <main class="body">
+    <p class="callout-orange">Η αξία μιας παροχής φαίνεται όταν ο εργαζόμενος καταλαβαίνει τι του προσφέρει&nbsp;– και η επιχείρηση ξέρει γιατί την προσφέρει.</p>
+    <div class="grid-2">
+      <article class="card">
+        <p class="eyebrow">ΥΓΕΙΑ</p>
+        <h3>Ομαδική υγεία</h3>
+        <p>Πρόσβαση σε ιδιωτικές υπηρεσίες υγείας και συμπληρωματικές παροχές, σύμφωνα με τη δομή και τα όρια του προγράμματος.</p>
+      </article>
+      <article class="card">
+        <p class="eyebrow">ΠΡΟΣΤΑΣΙΑ</p>
+        <h3>Ζωή &amp; ατύχημα</h3>
+        <p>Οικονομική προστασία εργαζομένου και οικογένειας σε σοβαρά απρόοπτα, ανάλογα με τις επιλεγμένες καλύψεις.</p>
+      </article>
+      <article class="card">
+        <p class="eyebrow">HR STRATEGY</p>
+        <h3>Retention &amp; loyalty</h3>
+        <p>Στοχευμένες παροχές μπορούν να συνδεθούν με τη διακράτηση και την επιβράβευση εργαζομένων ή στελεχών.</p>
+      </article>
+      <article class="card">
+        <p class="eyebrow">LONG-TERM</p>
+        <h3>Μακροπρόθεσμη παροχή</h3>
+        <p>Εταιρικά χρηματοδοτούμενος σχεδιασμός μπορεί να υποστηρίξει μελλοντική παροχή ή κεφάλαιο, με βάση το ισχύον θεσμικό και φορολογικό πλαίσιο.</p>
+      </article>
+    </div>
+    <p class="banner">Πρώτα ο στόχος της παροχής. Μετά η λύση.</p>
+  </main>
+  <footer class="foot"><span>Χρήστος Κόλτσης<span class="sep">|</span>Insurance &amp; Financial Advisor</span><span class="pg">04</span></footer>
+</section>
+
+<!-- 05 · Key Person -->
+<section class="page page-warm">
+  <header class="head">
+    <div>
+      <p class="eyebrow">KEY PERSON</p>
+      <h1>Τι συμβαίνει όταν ένας άνθρωπος επηρεάζει δυσανάλογα τα έσοδα, τη γνώση ή τις σχέσεις της εταιρείας;</h1>
+      <p class="lead">Ο «Key Person» μπορεί να είναι ο ιδιοκτήτης, ένας βασικός πωλητής, τεχνικός, διαχειριστής ή στέλεχος που δεν αντικαθίσταται εύκολα. Η απώλεια ή μακρά απουσία του μπορεί να δημιουργήσει πραγματικό επιχειρηματικό κενό.</p>
+    </div>
+    <p class="num">03</p>
+  </header>
+  <main class="body">
+    <div class="gap-layout">
+      <div class="gap-circle">
+        <img src="assets/logo-mark.png" alt="">
+        <span>ΚΕΝΟ<br>ΛΕΙΤΟΥΡΓΙΑΣ</span>
+      </div>
+      <ul class="bullets">
+        <li>Πτώση εσόδων ή παραγωγικότητας μέχρι να γίνει αντικατάσταση.</li>
+        <li>Κόστος εύρεσης, πρόσληψης και εκπαίδευσης νέου στελέχους.</li>
+        <li>Πίεση σε υποχρεώσεις, projects, πελάτες ή συνεργασίες.</li>
+        <li>Ανάγκη άμεσης ρευστότητας για να διατηρηθεί η σταθερότητα.</li>
+      </ul>
+    </div>
+    <div class="role-box">
+      <h3>Ο ρόλος της ασφάλισης</h3>
+      <p>Ανάλογα με τον σχεδιασμό, μπορεί να δημιουργηθεί κεφάλαιο για τη μεταβατική περίοδο, ώστε η επιχείρηση να έχει χρόνο και επιλογές αντί να αναγκαστεί να αντιδράσει υπό πίεση.</p>
+    </div>
+    <p class="banner">Προστατεύουμε την οικονομική αξία που δημιουργεί ο άνθρωπος-κλειδί.</p>
+  </main>
+  <footer class="foot"><span>Χρήστος Κόλτσης<span class="sep">|</span>Insurance &amp; Financial Advisor</span><span class="pg">05</span></footer>
+</section>
+
+<!-- 06 · Συνέταιροι & διαδοχή -->
+<section class="page">
+  <header class="head">
+    <div>
+      <p class="eyebrow">ΣΥΝΕΤΑΙΡΟΙ &amp; ΔΙΑΔΟΧΗ</p>
+      <h1>Η απώλεια ενός συνεταίρου δεν είναι μόνο προσωπικό γεγονός&nbsp;– μπορεί να γίνει εταιρικό αδιέξοδο.</h1>
+      <p class="lead">Χωρίς προετοιμασία, η συμμετοχή ενός συνεταίρου μπορεί να περάσει στους κληρονόμους ενώ οι υπόλοιποι εταίροι χρειάζονται κεφάλαιο για εξαγορά. Ο σωστός σχεδιασμός συνδέει τη συμφωνία των μερών με τη χρηματοδότηση του σεναρίου.</p>
+    </div>
+    <p class="num">04</p>
+  </header>
+  <main class="body">
+    <div class="steps">
+      <div>
+        <div class="step-dot">1</div>
+        <h3>Συμφωνία</h3>
+        <p>Τι προβλέπεται σε θάνατο, ανικανότητα ή αποχώρηση;</p>
+      </div>
+      <div>
+        <div class="step-dot">2</div>
+        <h3>Αποτίμηση</h3>
+        <p>Πώς καθορίζεται η αξία του μεριδίου;</p>
+      </div>
+      <div>
+        <div class="step-dot hot">3</div>
+        <h3>Χρηματοδότηση</h3>
+        <p>Πώς θα βρεθεί το κεφάλαιο όταν χρειαστεί;</p>
+      </div>
+      <div>
+        <div class="step-dot">4</div>
+        <h3>Μετάβαση</h3>
+        <p>Πώς προστατεύονται εταιρεία, εταίροι και κληρονόμοι;</p>
+      </div>
+    </div>
+    <div class="note">
+      <strong>Σημαντικό</strong>
+      <p>Το ασφαλιστικό κεφάλαιο δεν ταυτίζεται αυτόματα με την αξία της εταιρικής συμμετοχής. Η βάση πρέπει να προκύπτει από συμφωνία, καταστατικό και/ή αποτίμηση και να επανεξετάζεται καθώς αλλάζει η επιχείρηση.</p>
+    </div>
+    <p class="banner">Η διαδοχή χρειάζεται σχέδιο πριν χρειαστεί χρήματα.</p>
+  </main>
+  <footer class="foot"><span>Χρήστος Κόλτσης<span class="sep">|</span>Insurance &amp; Financial Advisor</span><span class="pg">06</span></footer>
+</section>
+
+<!-- 07 · Χρέος & ρευστότητα -->
+<section class="page">
+  <header class="head">
+    <div>
+      <p class="eyebrow">ΧΡΕΟΣ &amp; ΡΕΥΣΤΟΤΗΤΑ</p>
+      <h1>Οι υποχρεώσεις συνεχίζονται ακόμη κι όταν ο άνθρωπος που τις δημιούργησε δεν μπορεί.</h1>
+      <p class="lead">Δάνεια, εγγυήσεις, μισθώσεις, μισθοδοσία και λειτουργικά έξοδα δεν σταματούν αυτόματα σε ένα σοβαρό γεγονός. Για αυτό ο επιχειρηματικός σχεδιασμός εξετάζει ποια υποχρέωση χρειάζεται κεφάλαιο και για πόσο χρόνο.</p>
+    </div>
+    <p class="num">05</p>
+  </header>
+  <main class="body">
+    <div class="rows">
+      <div class="row"><span class="row-num">01</span><h3>Δάνεια &amp; πιστώσεις</h3><p>Ποιο υπόλοιπο θα πρέπει να μπορεί να εξυπηρετηθεί ή να μειωθεί;</p></div>
+      <div class="row"><span class="row-num">02</span><h3>Πάγια έξοδα</h3><p>Πόσους μήνες λειτουργίας θέλουμε να μπορούν να χρηματοδοτηθούν;</p></div>
+      <div class="row"><span class="row-num">03</span><h3>Προσωπικές εγγυήσεις</h3><p>Πού συνδέεται η προσωπική περιουσία με εταιρική υποχρέωση;</p></div>
+      <div class="row"><span class="row-num">04</span><h3>Ρευστότητα μετάβασης</h3><p>Τι κεφάλαιο απαιτείται μέχρι να σταθεροποιηθεί η επιχείρηση;</p></div>
+    </div>
+    <p class="banner">Μετράμε τις υποχρεώσεις σε ευρώ και χρόνο&nbsp;– όχι μόνο σε συμβόλαια.</p>
+  </main>
+  <footer class="foot"><span>Χρήστος Κόλτσης<span class="sep">|</span>Insurance &amp; Financial Advisor</span><span class="pg">07</span></footer>
+</section>
+
+<!-- 08 · Δημιουργία κεφαλαίου & φορολογικό πλαίσιο -->
+<section class="page page-dark">
+  <header class="head">
+    <div>
+      <p class="eyebrow">ΔΗΜΙΟΥΡΓΙΑ ΚΕΦΑΛΑΙΟΥ &amp; ΦΟΡΟΛΟΓΙΚΟ ΠΛΑΙΣΙΟ</p>
+      <h1>Όταν η εταιρική παροχή αποκτά μακροπρόθεσμο στόχο.</h1>
+      <p class="lead">Ομαδικά ασφαλιστικά προϊόντα επαγγελματικής συνταξιοδότησης μπορούν να χρησιμοποιηθούν στο πλαίσιο αμοιβών και παροχών για μακροπρόθεσμη συσσώρευση κεφαλαίου. Ο σχεδιασμός πρέπει να συνδέεται με τον πραγματικό ρόλο του ασφαλισμένου στην επιχείρηση και με το ισχύον φορολογικό πλαίσιο.</p>
+    </div>
+    <div class="brand-col">
+      <img src="assets/logo-mark.png" alt="">
+      <p class="num">06</p>
+    </div>
+  </header>
+  <main class="body">
+    <div class="tax-cards">
+      <div class="tax-card now">
+        <p class="when">2026</p>
+        <p class="big">έως 20%</p>
+        <p>Για μισθωτούς και όσους αποκτούν εισόδημα από μισθωτή εργασία, επί της βάσης που ορίζει το άρθρο 105 ν. 5078/2023. Για μη μισθωτούς προβλέπεται ανώτατο ποσό 20.000&nbsp;€ (με την προβλεπόμενη αναπροσαρμογή).</p>
+      </div>
+      <div class="tax-card next">
+        <p class="when">ΑΠΟ 1/1/2027</p>
+        <p class="big">έως 35%</p>
+        <p>Το άρθρο 96 ν. 5327/2026 αυξάνει τα όρια σε 35% και 35.000&nbsp;€ αντίστοιχα, για φορολογικά έτη που αρχίζουν από 1/1/2027. Προβλέπονται ειδικοί κανόνες για ορισμένες περιπτώσεις.</p>
+      </div>
+    </div>
+    <div class="check-box">
+      <h2>Τι ελέγχουμε πριν από οποιαδήποτε πρόταση</h2>
+      <ul class="bullets">
+        <li>Ποιος είναι ο στόχος: retention, εφάπαξ/loyalty παροχή, συμπληρωματικό κεφάλαιο ή σχεδιασμός επιχειρηματία;</li>
+        <li>Ποια είναι η νομική σχέση, η αμοιβή και η ιδιότητα του ασφαλισμένου μέσα στην επιχείρηση;</li>
+        <li>Ποια φορολογική και λογιστική μεταχείριση εφαρμόζεται στη συγκεκριμένη δομή;</li>
+      </ul>
+    </div>
+    <p class="disclaimer">Η φορολογική εφαρμογή επιβεβαιώνεται σε συνεργασία με λογιστή/φοροτεχνικό. Το παρόν αποτελεί ενημέρωση και όχι φορολογική ή νομική γνωμοδότηση.</p>
+  </main>
+  <footer class="foot"><span>Χρήστος Κόλτσης<span class="sep">|</span>Insurance &amp; Financial Advisor</span><span class="pg">08</span></footer>
+</section>
+
+<!-- 09 · Ο τρόπος συνεργασίας -->
+<section class="page">
+  <header class="head">
+    <div>
+      <p class="eyebrow">Ο ΤΡΟΠΟΣ ΣΥΝΕΡΓΑΣΙΑΣ</p>
+      <h1>Από το «τι υπάρχει» στο «τι χρειάζεται πραγματικά».</h1>
+      <p class="lead">Ο σχεδιασμός έχει αξία όταν είναι κατανοητός, μετρήσιμος και μπορεί να επανεξετάζεται καθώς αλλάζει η επιχείρηση.</p>
+    </div>
+  </header>
+  <main class="body">
+    <div class="process">
+      <div class="row first"><span class="row-num">01</span><h3>Καταγραφή</h3><p>Κλάδος, δραστηριότητα, προσωπικό, συνεργάτες, περιουσία, υποχρεώσεις και υπάρχουσες καλύψεις.</p></div>
+      <div class="row"><span class="row-num">02</span><h3>Risk Map</h3><p>Ποιο γεγονός μπορεί να προκαλέσει τη μεγαλύτερη οικονομική πίεση ή διακοπή λειτουργίας;</p></div>
+      <div class="row"><span class="row-num">03</span><h3>Προτεραιότητες</h3><p>Τι πρέπει να καλυφθεί πρώτο, ποιο κεφάλαιο χρειάζεται και ποιο budget είναι λογικό;</p></div>
+      <div class="row"><span class="row-num">04</span><h3>Σχεδιασμός &amp; έλεγχος</h3><p>Επιλογή λύσεων, εφαρμογή και επανέλεγχος όταν αλλάζει η εταιρεία ή το θεσμικό πλαίσιο.</p></div>
+    </div>
+    <p class="statement">Δεν ξεκινάμε από το τι μπορεί να πουληθεί.<br>Ξεκινάμε από το τι χρειάζεται να προστατευτεί.</p>
+  </main>
+  <footer class="foot"><span>Χρήστος Κόλτσης<span class="sep">|</span>Insurance &amp; Financial Advisor</span><span class="pg">09</span></footer>
+</section>
+
+<!-- 10 · Οπισθόφυλλο -->
+<section class="page page-dark back">
+  <img class="back-logo" src="assets/logo-mark.png" alt="Κόλτσης Χρήστος">
+  <h1>5 ερωτήσεις που αξίζει να απαντήσει κάθε επιχείρηση</h1>
+  <ol class="questions">
+    <li><b>1</b><span>Αν η επιχείρηση δεν μπορούσε να λειτουργήσει για 30 ημέρες, ποιο κόστος θα συνέχιζε να τρέχει;</span></li>
+    <li><b>2</b><span>Ποιος άνθρωπος θα ήταν ο δυσκολότερος και ακριβότερος να αντικατασταθεί;</span></li>
+    <li><b>3</b><span>Αν λείψει ένας συνέταιρος, ποιος θα αγοράσει το μερίδιό του και με ποια χρήματα;</span></li>
+    <li><b>4</b><span>Ποιες οφειλές ή εγγυήσεις θα συνέχιζαν να βαραίνουν την εταιρεία ή την οικογένεια;</span></li>
+    <li><b>5</b><span>Οι παροχές προς εργαζομένους εξυπηρετούν έναν συγκεκριμένο στόχο ή υπάρχουν χωρίς στρατηγική;</span></li>
+  </ol>
+  <div class="cta">
+    <h2>Ας χαρτογραφήσουμε τι χρειάζεται πραγματικά η επιχείρησή σας.</h2>
+    <p><a href="tel:+306989118348">698 911 8348</a><span class="dot">•</span><a href="mailto:Christos.Koltsis@nnadvisors.gr">Christos.Koltsis@nnadvisors.gr</a></p>
+  </div>
+  <div class="back-foot">
+    <strong>Χρήστος Κόλτσης<span class="sep"> | </span>Insurance &amp; Financial Advisor</strong>
+    <p>Ενημερωτικό υλικό • Οκτώβριος 2026</p>
+  </div>
+</section>
+
+</body>
+</html>
