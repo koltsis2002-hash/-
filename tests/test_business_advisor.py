@@ -157,6 +157,21 @@ def test_session_persists_and_restores(db_path, tmp_path):
         assert view["flow"]["answers"]["life.partners"]["value"] == "yes"
 
 
+def test_position_accepts_slide_markers(advisor):
+    p = advisor.create("2026-11-07")
+    advisor.set_position(p.id, 3, "slide:2")
+    assert advisor.client_view(p.id)["position"] == {"screen": 3, "question": "slide:2"}
+    for bad in ("slide:x", "<script>", "slide:123"):
+        with pytest.raises(ValidationError):
+            advisor.set_position(p.id, 3, bad)
+
+
+def test_every_category_has_a_slide_and_a_choice():
+    c = default_content()
+    for axis in c.axes:
+        assert c.presentation["categories"][axis["id"]] and axis["id"] in c.presentation["interests"]["items"]
+
+
 def test_client_view_never_contains_private_data(advisor):
     p = advisor.create("2026-11-07")
     advisor.save_preparation(p.id, {"business_name": "Αλφα ΟΕ", "financial_obligations": "ΔΑΝΕΙΟ-ΚΡΥΦΟ",

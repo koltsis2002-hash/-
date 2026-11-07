@@ -200,6 +200,10 @@ def load_content(data_dir=DATA_DIR) -> Content:
     presentation = {k: v for k, v in p_data.items() if not k.startswith("_")}
     if len(presentation["screens"]) != 10:
         raise ContentError("Η παρουσίαση έχει ακριβώς 10 οθόνες")
+    for axis_id in axis_ids:
+        slides = presentation["categories"].get(axis_id)
+        if not slides or axis_id not in presentation["interests"]["items"]:
+            raise ContentError(f"Η κατηγορία {axis_id} χρειάζεται διαφάνεια και κάρτα επιλογής στην παρουσίαση")
 
     return Content(
         axes=axes, questions=questions, question_by_id=seen, levels=levels, pillars=pillars,

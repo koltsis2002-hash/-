@@ -5,6 +5,7 @@ approve_summary) build their payload from an explicit allow-list: shared prepara
 answers, need statements and documented recommendations. Internal notes, unshared fields and rule
 reasons never enter it.
 """
+import re
 from dataclasses import dataclass
 from datetime import date
 
@@ -263,8 +264,9 @@ class BusinessAdvisorService:
         p = self.get(presentation_id)
         if not isinstance(screen, int) or not 0 <= screen < SCREEN_COUNT:
             raise ValidationError("Μη έγκυρη οθόνη")
-        if question_id is not None and question_id not in self.content.question_by_id:
-            raise ValidationError("Άγνωστη ερώτηση")
+        if question_id is not None and question_id not in self.content.question_by_id \
+                and not re.fullmatch(r"slide:\d{1,2}", str(question_id)):
+            raise ValidationError("Άγνωστη θέση παρουσίασης")
         changes = {"current_screen": screen, "current_question": question_id}
         if screen == SCREEN_COUNT - 1:
             changes["status"] = "completed"
