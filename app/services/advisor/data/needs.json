@@ -1,5 +1,5 @@
 {
-  "_doc": "Ανάγκες και ερμηνεύσιμοι κανόνες. Οι κανόνες κάθε ανάγκης ελέγχονται με τη σειρά· ο πρώτος που ισχύει ορίζει το επίπεδο και την αιτιολόγηση (reason, μόνο για τον σύμβουλο). Αν δεν ισχύει κανένας, το επίπεδο είναι info_needed. Οι διατυπώσεις statements εμφανίζονται στον πελάτη. evidence: οι ερωτήσεις που τεκμηριώνουν την ανάγκη.",
+  "_doc": "Ανάγκες και ερμηνεύσιμοι κανόνες. Κάθε ανάγκη ανήκει σε μία κατηγορία (axis) και εμφανίζεται μόνο όταν η κατηγορία είναι επιλεγμένη. Οι κανόνες ελέγχονται με τη σειρά· ο πρώτος που ισχύει ορίζει το επίπεδο και την αιτιολόγηση (reason, μόνο για τον σύμβουλο). Αν δεν ισχύει κανένας, το επίπεδο είναι info_needed. Οι διατυπώσεις statements εμφανίζονται στον πελάτη.",
   "levels": [
     {"id": "confirmed", "label": "Επιβεβαιωμένη ανάγκη"},
     {"id": "possible", "label": "Πιθανή ανάγκη"},
@@ -7,321 +7,216 @@
     {"id": "not_priority", "label": "Δεν αναδείχθηκε ως προτεραιότητα"}
   ],
   "pillars": [
-    {"id": "people", "number": "01", "title": "Άνθρωποι-κλειδιά"},
-    {"id": "staff", "number": "02", "title": "Προσωπικό & παροχές"},
-    {"id": "operations", "number": "03", "title": "Λειτουργία & περιουσία"}
+    {"id": "people", "number": "01", "title": "Επιχειρηματίας & συνέταιροι"},
+    {"id": "staff", "number": "02", "title": "Προσωπικό"},
+    {"id": "savings", "number": "03", "title": "Αποταμίευση"},
+    {"id": "operations", "number": "04", "title": "Λειτουργία & περιουσία"}
   ],
   "priority_rules": [
-    "1. Επίπεδο: επιβεβαιωμένη → πιθανή → χρειάζονται πληροφορίες → όχι προτεραιότητα.",
-    "2. Πυλώνας: πρώτα οι άνθρωποι, μετά το προσωπικό, μετά η λειτουργία (φιλοσοφία: «ξεκινάμε πάντα από τους ανθρώπους»).",
-    "3. Θέματα που σημειώθηκαν ως ενδιαφέροντα στην προετοιμασία προηγούνται μέσα στον ίδιο πυλώνα.",
-    "4. Σειρά ανάγκης στο αρχείο needs.json."
+    "1. Πρώτα οι ανάγκες με επίπεδο «επιβεβαιωμένη» ή «πιθανή», μετά όσες χρειάζονται πληροφορίες, τέλος όσες δεν είναι προτεραιότητα.",
+    "2. Μέσα σε αυτές, η σειρά των κατηγοριών είναι πάντα: ζωή, υγεία, ομαδικά, αποταμίευση, και μετά οι προαιρετικές.",
+    "3. Στην ίδια κατηγορία, η επιβεβαιωμένη προηγείται της πιθανής."
   ],
   "needs": [
     {
-      "id": "key_person", "pillar": "people", "axis": "key_people",
-      "title": "Προστασία ανθρώπων-κλειδιών",
-      "evidence": ["key.dependency", "key.who", "key.replace_time", "key.existing_cover"],
+      "id": "owner_life", "pillar": "people", "axis": "life",
+      "title": "Ασφάλεια ζωής επιχειρηματία & συνεταίρων",
+      "evidence": ["life.cover", "life.partners"],
       "statements": {
-        "confirmed": "Η συνέχεια της επιχείρησής σας στηρίζεται σε συγκεκριμένους ανθρώπους — η προστασία τους αποτελεί προτεραιότητα.",
-        "possible": "Αξίζει να εξετάσουμε πώς θα στηριζόταν η επιχείρηση αν έλειπε για καιρό ένας βασικός άνθρωπος.",
-        "info_needed": "Θα χρειαστούμε λίγες ακόμη πληροφορίες για τον ρόλο των βασικών σας ανθρώπων.",
-        "not_priority": "Η λειτουργία δεν εξαρτάται κρίσιμα από ένα πρόσωπο — δεν αναδείχθηκε ως προτεραιότητα."
+        "confirmed": "Η προστασία της οικογένειάς σας και της επιχείρησης, αν λείψετε εσείς ή ένας συνέταιρος, αποτελεί προτεραιότητα.",
+        "possible": "Αξίζει να ελέγξουμε αν η υπάρχουσα ασφάλεια ζωής ταιριάζει στη σημερινή σας εικόνα.",
+        "info_needed": "Θα χρειαστούμε λίγες ακόμη πληροφορίες για την ασφάλεια ζωής σας.",
+        "not_priority": "Υπάρχει ήδη επαρκής ασφάλεια ζωής — δεν αναδείχθηκε ως προτεραιότητα."
       },
       "rules": [
-        {"level": "confirmed", "reason": "Η λειτουργία θα δυσκολευόταν ή θα σταματούσε, η αντικατάσταση δεν είναι γρήγορη και δεν υπάρχει υφιστάμενη κάλυψη.",
-         "when": {"all": [{"q": "key.dependency", "in": ["harder", "stop"]}, {"q": "key.existing_cover", "eq": "no"}, {"not": {"q": "key.replace_time", "eq": "lt3"}}]}},
-        {"level": "possible", "reason": "Υπάρχει εξάρτηση από βασικά πρόσωπα· χρειάζεται έλεγχος του χρόνου αντικατάστασης ή της επάρκειας της υφιστάμενης κάλυψης.",
-         "when": {"q": "key.dependency", "in": ["harder", "stop"]}},
-        {"level": "not_priority", "reason": "Η λειτουργία θα συνέχιζε κανονικά.",
-         "when": {"q": "key.dependency", "eq": "normal"}}
+        {"level": "confirmed", "reason": "Δεν υπάρχει ασφάλεια ζωής.", "when": {"q": "life.cover", "eq": "no"}},
+        {"level": "possible", "reason": "Υπάρχει ασφάλεια ζωής, αλλά μικρή ή παλιά.", "when": {"q": "life.cover", "eq": "small"}},
+        {"level": "not_priority", "reason": "Δηλώθηκε επαρκές κεφάλαιο ασφάλειας ζωής.", "when": {"q": "life.cover", "eq": "adequate"}}
       ]
     },
     {
-      "id": "partner_buyout", "pillar": "people", "axis": "partners",
+      "id": "partner_buyout", "pillar": "people", "axis": "life",
       "title": "Προστασία συνεταίρων",
-      "evidence": ["partners.has", "partners.agreement", "partners.funding"],
+      "evidence": ["life.partners", "life.partner_plan"],
       "statements": {
-        "confirmed": "Η συνέχεια της συνεργασίας των εταίρων είναι προτεραιότητα — αξίζει να υπάρχει έτοιμο σχέδιο για το μερίδιο του καθενός.",
-        "possible": "Υπάρχει ήδη συμφωνία μεταξύ των εταίρων· αξίζει να βεβαιωθούμε ότι είναι εξασφαλισμένα και τα χρήματα της εξαγοράς.",
+        "confirmed": "Η συνέχεια της συνεργασίας των εταίρων είναι προτεραιότητα — αξίζει να υπάρχει έτοιμο σχέδιο και χρήματα για το μερίδιο του καθενός.",
+        "possible": "Αξίζει να βεβαιωθούμε ότι το σχέδιο για τα μερίδια των εταίρων είναι εξασφαλισμένο.",
         "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για τη συμφωνία μεταξύ των εταίρων.",
-        "not_priority": "Δεν υπάρχουν συνέταιροι — το θέμα δεν αφορά την επιχείρηση σήμερα."
+        "not_priority": "Το θέμα των συνεταίρων δεν αναδείχθηκε ως προτεραιότητα."
       },
       "rules": [
-        {"level": "confirmed", "reason": "Υπάρχουν συνέταιροι χωρίς συμφωνία για το μερίδιο σε σοβαρό απρόοπτο: εξέταση χρηματοδοτούμενης εξαγοράς εταιρικού μεριδίου.",
-         "when": {"all": [{"q": "partners.has", "eq": "yes"}, {"q": "partners.agreement", "eq": "no"}]}},
-        {"level": "confirmed", "reason": "Υπάρχει συμφωνία, αλλά η χρηματοδότηση της εξαγοράς δεν είναι εξασφαλισμένη.",
-         "when": {"all": [{"q": "partners.agreement", "eq": "yes"}, {"q": "partners.funding", "in": ["loan", "unclear"]}]}},
-        {"level": "possible", "reason": "Υπάρχει συμφωνία και πηγή χρηματοδότησης· προτείνεται έλεγχος επάρκειας και επικαιροποίησης.",
-         "when": {"all": [{"q": "partners.agreement", "eq": "yes"}, {"q": "partners.funding", "in": ["cash", "insurance"]}]}},
-        {"level": "info_needed", "reason": "Υπάρχουν συνέταιροι, αλλά η συμφωνία ή η χρηματοδότηση δεν διευκρινίστηκε.",
-         "when": {"q": "partners.has", "eq": "yes"}},
-        {"level": "not_priority", "reason": "Δεν υπάρχουν συνέταιροι.",
-         "when": {"q": "partners.has", "eq": "no"}}
+        {"level": "confirmed", "reason": "Υπάρχουν συνέταιροι χωρίς σχέδιο για το μερίδιο: εξέταση χρηματοδοτούμενης εξαγοράς εταιρικού μεριδίου.",
+         "when": {"all": [{"q": "life.partners", "eq": "yes"}, {"q": "life.partner_plan", "eq": "no"}]}},
+        {"level": "not_priority", "reason": "Υπάρχει σχέδιο για το μερίδιο συνεταίρου.", "when": {"q": "life.partner_plan", "eq": "yes"}},
+        {"level": "not_priority", "reason": "Δεν υπάρχουν συνέταιροι.", "when": {"q": "life.partners", "eq": "no"}}
       ]
     },
     {
-      "id": "succession", "pillar": "people", "axis": "partners",
-      "title": "Επιχειρηματική συνέχεια & διαδοχή",
-      "evidence": ["succession.plan", "key.dependency", "partners.has"],
+      "id": "owner_health", "pillar": "people", "axis": "health",
+      "title": "Ασφάλεια υγείας επιχειρηματία & συνεταίρων",
+      "evidence": ["health.private"],
       "statements": {
-        "confirmed": "Η ομαλή μετάβαση της επιχείρησης στην επόμενη μέρα είναι σημαντική για εσάς — αξίζει να προετοιμαστεί από τώρα.",
-        "possible": "Η διαδοχή είναι ένα θέμα που αξίζει να σχεδιάσουμε μαζί σε βάθος χρόνου.",
-        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για τα σχέδιά σας για το μέλλον της επιχείρησης.",
-        "not_priority": "Το θέμα της διαδοχής δεν αναδείχθηκε ως άμεση προτεραιότητα."
+        "confirmed": "Η υγεία σας είναι το πιο πολύτιμο κεφάλαιο της επιχείρησης — η ιδιωτική ασφάλεια υγείας αποτελεί προτεραιότητα.",
+        "possible": "Αξίζει να δούμε αν η σημερινή σας ασφάλεια υγείας καλύπτει όσα πραγματικά χρειάζεστε.",
+        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για την ασφάλεια υγείας σας.",
+        "not_priority": "Υπάρχει ήδη πλήρης ασφάλεια υγείας — δεν αναδείχθηκε ως προτεραιότητα."
       },
       "rules": [
-        {"level": "confirmed", "reason": "Δεν υπάρχει ολοκληρωμένο σχέδιο διαδοχής και η λειτουργία θα σταματούσε χωρίς το βασικό πρόσωπο.",
-         "when": {"all": [{"q": "succession.plan", "in": ["not_yet", "thinking"]}, {"q": "key.dependency", "eq": "stop"}]}},
-        {"level": "possible", "reason": "Δεν υπάρχει ακόμη ολοκληρωμένο σχέδιο διαδοχής.",
-         "when": {"q": "succession.plan", "in": ["not_yet", "thinking"]}},
-        {"level": "not_priority", "reason": "Υπάρχει σαφές σχέδιο ή δεν σχεδιάζεται συνέχεια.",
-         "when": {"q": "succession.plan", "in": ["plan", "no_continuation"]}},
-        {"level": "not_priority", "reason": "Η λειτουργία δεν εξαρτάται κρίσιμα από ένα πρόσωπο και δεν υπάρχουν συνέταιροι.",
-         "when": {"all": [{"q": "key.dependency", "eq": "normal"}, {"q": "partners.has", "eq": "no"}]}}
+        {"level": "confirmed", "reason": "Δεν υπάρχει ιδιωτική ασφάλεια υγείας.", "when": {"q": "health.private", "eq": "no"}},
+        {"level": "possible", "reason": "Υπάρχει μόνο βασική ασφάλεια υγείας.", "when": {"q": "health.private", "eq": "basic"}},
+        {"level": "not_priority", "reason": "Υπάρχει πλήρης ασφάλεια υγείας.", "when": {"q": "health.private", "eq": "full"}}
+      ]
+    },
+    {
+      "id": "income_protection", "pillar": "people", "axis": "health",
+      "title": "Εισόδημα σε περίοδο ασθένειας",
+      "evidence": ["health.income"],
+      "statements": {
+        "confirmed": "Η συνέχεια του εισοδήματός σας, όταν η υγεία σας κρατά μακριά από τη δουλειά, αποτελεί προτεραιότητα.",
+        "possible": "Αξίζει να εξετάσουμε τι θα γινόταν με το εισόδημά σας σε μια μεγάλη περίοδο ανάρρωσης.",
+        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για το εισόδημά σας σε περίοδο ασθένειας.",
+        "not_priority": "Το εισόδημα συνεχίζει και σε περίοδο ασθένειας — δεν αναδείχθηκε ως προτεραιότητα."
+      },
+      "rules": [
+        {"level": "confirmed", "reason": "Το εισόδημα σταματά όταν ο επιχειρηματίας δεν μπορεί να εργαστεί.", "when": {"q": "health.income", "eq": "no"}},
+        {"level": "not_priority", "reason": "Το εισόδημα συνεχίζει σε περίοδο ασθένειας.", "when": {"q": "health.income", "eq": "yes"}}
+      ]
+    },
+    {
+      "id": "group_health", "pillar": "staff", "axis": "group",
+      "title": "Ομαδικό πρόγραμμα υγείας",
+      "evidence": ["group.staff", "group.current", "group.goal"],
+      "statements": {
+        "confirmed": "Η υγεία και η διατήρηση των ανθρώπων σας είναι προτεραιότητα — ένα ομαδικό πρόγραμμα υγείας αξίζει να εξεταστεί.",
+        "possible": "Ένα ομαδικό πρόγραμμα υγείας θα μπορούσε να ενισχύσει την επιχείρησή σας ως εργοδότη.",
+        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για το προσωπικό σας.",
+        "not_priority": "Ένα νέο ομαδικό πρόγραμμα υγείας δεν αναδείχθηκε ως προτεραιότητα αυτή τη στιγμή."
+      },
+      "rules": [
+        {"level": "not_priority", "reason": "Δεν απασχολούνται εργαζόμενοι.", "when": {"q": "group.staff", "lte": 0}},
+        {"level": "not_priority", "reason": "Υπάρχει ήδη ομαδικό υγείας.", "when": {"q": "group.current", "includes": "health"}},
+        {"level": "not_priority", "reason": "Τα ομαδικά δεν είναι προτεραιότητα τώρα.", "when": {"q": "group.goal", "eq": "none"}},
+        {"level": "confirmed", "reason": "Στόχος η υγεία ή η διατήρηση του προσωπικού, χωρίς ομαδικό υγείας.",
+         "when": {"q": "group.goal", "in": ["health", "retain"]}},
+        {"level": "possible", "reason": "Υπάρχει προσωπικό χωρίς ομαδικό υγείας.", "when": {"q": "group.staff", "gte": 1}}
+      ]
+    },
+    {
+      "id": "group_pension", "pillar": "staff", "axis": "group",
+      "title": "Ομαδικό συνταξιοδοτικό",
+      "evidence": ["group.staff", "group.current", "group.goal"],
+      "statements": {
+        "confirmed": "Ένα αποθεματικό για τους ανθρώπους σας — αποζημιώσεις, επιβράβευση, πιστότητα — είναι προτεραιότητα για την επιχείρησή σας.",
+        "possible": "Ένα ομαδικό συνταξιοδοτικό θα μπορούσε να χτίζει σταδιακά αποθεματικό για το προσωπικό σας.",
+        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για το προσωπικό σας.",
+        "not_priority": "Ένα νέο ομαδικό συνταξιοδοτικό δεν αναδείχθηκε ως προτεραιότητα αυτή τη στιγμή."
+      },
+      "rules": [
+        {"level": "not_priority", "reason": "Δεν απασχολούνται εργαζόμενοι.", "when": {"q": "group.staff", "lte": 0}},
+        {"level": "not_priority", "reason": "Υπάρχει ήδη ομαδικό συνταξιοδοτικό.", "when": {"q": "group.current", "includes": "pension"}},
+        {"level": "not_priority", "reason": "Τα ομαδικά δεν είναι προτεραιότητα τώρα.", "when": {"q": "group.goal", "eq": "none"}},
+        {"level": "confirmed", "reason": "Στόχος αποθεματικό για αποζημιώσεις/bonus ή διατήρηση προσωπικού, χωρίς ομαδικό συνταξιοδοτικό.",
+         "when": {"q": "group.goal", "in": ["reserve", "retain"]}},
+        {"level": "possible", "reason": "Υπάρχει προσωπικό χωρίς ομαδικό συνταξιοδοτικό.", "when": {"q": "group.staff", "gte": 1}}
+      ]
+    },
+    {
+      "id": "business_savings", "pillar": "savings", "axis": "savings",
+      "title": "Αποθεματικό για την επιχείρηση",
+      "evidence": ["savings.goal", "savings.horizon"],
+      "statements": {
+        "confirmed": "Ένα αποθεματικό που χτίζεται σταδιακά μέσα από την επιχείρηση είναι στόχος σας — για επενδύσεις και για τις δύσκολες χρονιές.",
+        "possible": "Αξίζει να δούμε πώς η επιχείρηση μπορεί να χτίζει ένα δικό της αποθεματικό.",
+        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για τους στόχους αποταμίευσης.",
+        "not_priority": "Ένα αποθεματικό για την επιχείρηση δεν αναδείχθηκε ως προτεραιότητα."
+      },
+      "rules": [
+        {"level": "confirmed", "reason": "Ενδιαφέρον για αποθεματικό της επιχείρησης.", "when": {"q": "savings.goal", "includes": "business"}},
+        {"level": "not_priority", "reason": "Δεν επιλέχθηκε αποθεματικό για την επιχείρηση.", "when": {"q": "savings.goal", "answered": true}}
+      ]
+    },
+    {
+      "id": "owner_savings", "pillar": "savings", "axis": "savings",
+      "title": "Αποταμίευση για τον επιχειρηματία",
+      "evidence": ["savings.goal", "savings.horizon"],
+      "statements": {
+        "confirmed": "Ένα κεφάλαιο για εσάς και την οικογένειά σας, που χτίζεται μέσα από την επιχείρηση, είναι στόχος σας.",
+        "possible": "Αξίζει να δούμε πώς ένα μέρος των κερδών μπορεί να γίνει κεφάλαιο για το μέλλον σας.",
+        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για τους στόχους αποταμίευσης.",
+        "not_priority": "Η προσωπική αποταμίευση δεν αναδείχθηκε ως προτεραιότητα."
+      },
+      "rules": [
+        {"level": "confirmed", "reason": "Ενδιαφέρον για κεφάλαιο για τον ίδιο ή για τα παιδιά.", "when": {"q": "savings.goal", "includes_any": ["owner", "children"]}},
+        {"level": "not_priority", "reason": "Δεν επιλέχθηκε προσωπική αποταμίευση.", "when": {"q": "savings.goal", "answered": true}}
       ]
     },
     {
       "id": "loan_protection", "pillar": "people", "axis": "loans",
       "title": "Προστασία δανεισμού & εγγυήσεων",
-      "evidence": ["loans.has", "ops.closure_costs", "loans.guarantees", "loans.repayment", "loans.horizon"],
+      "evidence": ["loans.has", "loans.covered"],
       "statements": {
         "confirmed": "Οι υποχρεώσεις της επιχείρησης δεν πρέπει να βαρύνουν την οικογένειά σας — η εξασφάλισή τους αποτελεί προτεραιότητα.",
         "possible": "Αξίζει να εξετάσουμε πώς θα συνέχιζαν να εξυπηρετούνται οι υποχρεώσεις σε ένα απρόοπτο.",
         "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για τις υποχρεώσεις της επιχείρησης.",
-        "not_priority": "Η επιχείρηση δεν έχει σημαντικές μακροχρόνιες υποχρεώσεις — δεν αναδείχθηκε ως προτεραιότητα."
+        "not_priority": "Οι υποχρεώσεις δεν αναδείχθηκαν ως προτεραιότητα."
       },
       "rules": [
-        {"level": "confirmed", "reason": "Δάνεια με προσωπικές εγγυήσεις, χωρίς ασφαλιστική πρόβλεψη αποπληρωμής.",
-         "when": {"all": [{"any": [{"q": "loans.has", "eq": "yes"}, {"q": "ops.closure_costs", "includes": "loans"}]}, {"q": "loans.guarantees", "eq": "yes"}, {"not": {"q": "loans.repayment", "eq": "insurance"}}]}},
-        {"level": "confirmed", "reason": "Δεν είναι ξεκάθαρο πώς θα πληρώνονταν οι δόσεις σε ένα απρόοπτο.",
-         "when": {"all": [{"any": [{"q": "loans.has", "eq": "yes"}, {"q": "ops.closure_costs", "includes": "loans"}]}, {"q": "loans.repayment", "eq": "unclear"}]}},
-        {"level": "possible", "reason": "Υπάρχουν μακροχρόνιες υποχρεώσεις· χρειάζεται έλεγχος της πρόβλεψης αποπληρωμής.",
-         "when": {"any": [{"q": "loans.has", "eq": "yes"}, {"q": "ops.closure_costs", "includes": "loans"}]}},
-        {"level": "not_priority", "reason": "Δεν υπάρχουν δάνεια ή μακροχρόνιες υποχρεώσεις.",
-         "when": {"q": "loans.has", "eq": "no"}}
-      ]
-    },
-    {
-      "id": "group_health", "pillar": "staff", "axis": "staff",
-      "title": "Ομαδικό πρόγραμμα υγείας",
-      "evidence": ["staff.count", "staff.benefits", "staff.goals", "staff.hiring"],
-      "statements": {
-        "confirmed": "Η υγεία και η ασφάλεια των ανθρώπων σας είναι προτεραιότητα — ένα ομαδικό πρόγραμμα υγείας αξίζει να εξεταστεί.",
-        "possible": "Ένα πρόγραμμα υγείας θα μπορούσε να ενισχύσει την επιχείρησή σας ως εργοδότη.",
-        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για το προσωπικό και τις παροχές του.",
-        "not_priority": "Ένα νέο ομαδικό πρόγραμμα υγείας δεν αναδείχθηκε ως προτεραιότητα αυτή τη στιγμή."
-      },
-      "rules": [
-        {"level": "not_priority", "reason": "Δεν απασχολούνται εργαζόμενοι.", "when": {"q": "staff.count", "lte": 0}},
-        {"level": "not_priority", "reason": "Υπάρχει ήδη ομαδικό πρόγραμμα υγείας (βλ. «Επανεξέταση υφιστάμενων παροχών»).",
-         "when": {"q": "staff.benefits", "includes": "health"}},
-        {"level": "confirmed", "reason": "Υπάρχει προσωπικό χωρίς ομαδικό πρόγραμμα υγείας και ο στόχος περιλαμβάνει υγεία, διατήρηση ή προσέλκυση.",
-         "when": {"all": [{"q": "staff.count", "gte": 1}, {"q": "staff.goals", "includes_any": ["health", "retain", "attract"]}]}},
-        {"level": "possible", "reason": "Υπάρχει δυσκολία στην προσέλκυση ή διατήρηση προσωπικού.",
-         "when": {"all": [{"q": "staff.count", "gte": 1}, {"q": "staff.hiring", "in": ["medium", "hard"]}]}},
-        {"level": "not_priority", "reason": "Οι στόχοι που αναφέρθηκαν δεν σχετίζονται με υγεία ή διατήρηση προσωπικού.",
-         "when": {"all": [{"q": "staff.count", "gte": 1}, {"q": "staff.goals", "answered": true}]}}
-      ]
-    },
-    {
-      "id": "group_pension", "pillar": "staff", "axis": "staff",
-      "title": "Ομαδικό συνταξιοδοτικό & αποθεματικό",
-      "evidence": ["staff.count", "staff.benefits", "staff.goals"],
-      "statements": {
-        "confirmed": "Ο προγραμματισμός για τους ανθρώπους σας — αποζημιώσεις, επιβράβευση, αποθεματικό — είναι προτεραιότητα για την επιχείρησή σας.",
-        "possible": "Ένα αποθεματικό που χτίζεται σταδιακά θα μπορούσε να στηρίξει τα σχέδιά σας για το προσωπικό.",
-        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για τους στόχους σας για το προσωπικό.",
-        "not_priority": "Ένα νέο ομαδικό συνταξιοδοτικό δεν αναδείχθηκε ως προτεραιότητα αυτή τη στιγμή."
-      },
-      "rules": [
-        {"level": "not_priority", "reason": "Δεν απασχολούνται εργαζόμενοι.", "when": {"q": "staff.count", "lte": 0}},
-        {"level": "not_priority", "reason": "Υπάρχει ήδη ομαδικό συνταξιοδοτικό (βλ. «Επανεξέταση υφιστάμενων παροχών»).",
-         "when": {"q": "staff.benefits", "includes": "pension"}},
-        {"level": "confirmed", "reason": "Στόχος οι αποζημιώσεις αποχώρησης ή η επιβράβευση μακροχρόνιας συνεργασίας.",
-         "when": {"all": [{"q": "staff.count", "gte": 1}, {"q": "staff.goals", "includes_any": ["severance", "reward"]}]}},
-        {"level": "possible", "reason": "Στόχος η διατήρηση προσωπικού — ένα αποθεματικό επιβράβευσης μπορεί να βοηθήσει.",
-         "when": {"all": [{"q": "staff.count", "gte": 1}, {"q": "staff.goals", "includes": "retain"}]}},
-        {"level": "possible", "reason": "Με 10 ή περισσότερους εργαζόμενους οι μελλοντικές αποζημιώσεις αποχώρησης αποκτούν βάρος.",
-         "when": {"q": "staff.count", "gte": 10}},
-        {"level": "not_priority", "reason": "Οι στόχοι που αναφέρθηκαν δεν σχετίζονται με αποθεματικό ή επιβράβευση.",
-         "when": {"all": [{"q": "staff.count", "gte": 1}, {"q": "staff.goals", "answered": true}]}}
-      ]
-    },
-    {
-      "id": "staff_retention", "pillar": "staff", "axis": "staff",
-      "title": "Διατήρηση & επιβράβευση βασικών εργαζομένων",
-      "evidence": ["staff.count", "staff.goals", "staff.hiring", "key.who"],
-      "statements": {
-        "confirmed": "Διαπιστώσαμε ότι η διατήρηση των βασικών εργαζομένων αποτελεί προτεραιότητα για την επιχείρησή σας.",
-        "possible": "Αξίζει να δούμε πώς οι παροχές μπορούν να κρατήσουν κοντά σας τους καλούς ανθρώπους.",
-        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για τους βασικούς σας εργαζόμενους.",
-        "not_priority": "Η διατήρηση προσωπικού δεν αναδείχθηκε ως προτεραιότητα αυτή τη στιγμή."
-      },
-      "rules": [
-        {"level": "not_priority", "reason": "Δεν απασχολούνται εργαζόμενοι.", "when": {"q": "staff.count", "lte": 0}},
-        {"level": "confirmed", "reason": "Στόχος η διατήρηση των καλών ανθρώπων ή δυσκολία στην εύρεση και διατήρηση προσωπικού.",
-         "when": {"all": [{"q": "staff.count", "gte": 1}, {"any": [{"q": "staff.goals", "includes": "retain"}, {"q": "staff.hiring", "eq": "hard"}]}]}},
-        {"level": "possible", "reason": "Κάποια δυσκολία στο προσωπικό ή στόχος προσέλκυσης/επιβράβευσης.",
-         "when": {"all": [{"q": "staff.count", "gte": 1}, {"any": [{"q": "staff.hiring", "eq": "medium"}, {"q": "staff.goals", "includes_any": ["attract", "reward"]}]}]}},
-        {"level": "possible", "reason": "Βασικοί εργαζόμενοι είναι ταυτόχρονα και πρόσωπα-κλειδιά.",
-         "when": {"all": [{"q": "staff.count", "gte": 1}, {"q": "key.who", "includes_any": ["sales", "technical", "manager"]}]}},
-        {"level": "not_priority", "reason": "Η εύρεση και διατήρηση προσωπικού είναι εύκολη.",
-         "when": {"all": [{"q": "staff.count", "gte": 1}, {"q": "staff.hiring", "answered": true}]}}
-      ]
-    },
-    {
-      "id": "benefits_review", "pillar": "staff", "axis": "staff",
-      "title": "Επανεξέταση υφιστάμενων παροχών",
-      "evidence": ["staff.benefits", "staff.review", "staff.goals"],
-      "statements": {
-        "confirmed": "Οι παροχές που ήδη προσφέρετε αξίζουν μια επανεξέταση, ώστε να συνεχίσουν να υπηρετούν τους στόχους σας.",
-        "possible": "Αξίζει να βεβαιωθούμε ότι οι υπάρχουσες παροχές καλύπτουν όσα θέλετε να πετύχετε.",
-        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για τις υπάρχουσες παροχές.",
-        "not_priority": "Δεν προέκυψε ανάγκη επανεξέτασης παροχών αυτή τη στιγμή."
-      },
-      "rules": [
-        {"level": "confirmed", "reason": "Υπάρχουν ομαδικές παροχές που δεν έχουν επανεξεταστεί τα τελευταία δύο χρόνια.",
-         "when": {"all": [{"q": "staff.benefits", "includes_any": ["health", "pension"]}, {"q": "staff.review", "eq": "no"}]}},
-        {"level": "not_priority", "reason": "Οι υπάρχουσες παροχές έχουν επανεξεταστεί πρόσφατα.",
-         "when": {"all": [{"q": "staff.benefits", "includes_any": ["health", "pension"]}, {"q": "staff.review", "eq": "yes"}]}},
-        {"level": "possible", "reason": "Υπάρχουν ομαδικές παροχές· δεν είναι γνωστό πότε επανεξετάστηκαν.",
-         "when": {"q": "staff.benefits", "includes_any": ["health", "pension"]}},
-        {"level": "not_priority", "reason": "Δεν απασχολούνται εργαζόμενοι.", "when": {"q": "staff.count", "lte": 0}},
-        {"level": "not_priority", "reason": "Δεν υπάρχουν ομαδικές παροχές προς επανεξέταση.",
-         "when": {"q": "staff.benefits", "answered": true}}
+        {"level": "confirmed", "reason": "Υπάρχουν δάνεια ή εγγυήσεις που θα βάραιναν την οικογένεια.",
+         "when": {"all": [{"q": "loans.has", "eq": "yes"}, {"q": "loans.covered", "eq": "no"}]}},
+        {"level": "not_priority", "reason": "Οι δόσεις θα καλύπτονταν χωρίς επιβάρυνση της οικογένειας.", "when": {"q": "loans.covered", "eq": "yes"}},
+        {"level": "possible", "reason": "Υπάρχουν δάνεια ή εγγυήσεις· δεν διευκρινίστηκε η κάλυψη.", "when": {"q": "loans.has", "eq": "yes"}},
+        {"level": "not_priority", "reason": "Δεν υπάρχουν δάνεια ή εγγυήσεις.", "when": {"q": "loans.has", "eq": "no"}}
       ]
     },
     {
       "id": "property_protection", "pillar": "operations", "axis": "property",
-      "title": "Προστασία εγκαταστάσεων & αποθεμάτων",
+      "title": "Προστασία περιουσίας & εξοπλισμού",
       "evidence": ["property.assets", "property.insured"],
       "statements": {
-        "confirmed": "Οι εγκαταστάσεις και τα αποθέματά σας είναι κρίσιμα για τη λειτουργία — η προστασία τους στην πραγματική τους αξία είναι προτεραιότητα.",
-        "possible": "Αξίζει να επανεξετάσουμε αν τα ασφαλισμένα ποσά αντιστοιχούν στη σημερινή αξία της περιουσίας σας.",
-        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για τις εγκαταστάσεις και τα αποθέματά σας.",
-        "not_priority": "Η προστασία εγκαταστάσεων δεν αναδείχθηκε ως προτεραιότητα αυτή τη στιγμή."
+        "confirmed": "Η περιουσία και ο εξοπλισμός σας είναι κρίσιμα για τη λειτουργία — η προστασία τους στην πραγματική τους αξία είναι προτεραιότητα.",
+        "possible": "Αξίζει να επανεξετάσουμε αν τα ασφαλισμένα ποσά αντιστοιχούν στη σημερινή αξία.",
+        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για την περιουσία της επιχείρησης.",
+        "not_priority": "Η προστασία περιουσίας δεν αναδείχθηκε ως προτεραιότητα."
       },
       "rules": [
-        {"level": "confirmed", "reason": "Κρίσιμες εγκαταστάσεις ή αποθέματα χωρίς ασφάλιση ή με μερική ασφάλιση.",
-         "when": {"all": [{"q": "property.assets", "includes_any": ["owned_premises", "rented_premises", "stock"]}, {"q": "property.insured", "in": ["no", "partial"]}]}},
-        {"level": "possible", "reason": "Ασφαλισμένα, αλλά τα ποσά δεν έχουν επανεξεταστεί πρόσφατα.",
-         "when": {"all": [{"q": "property.assets", "includes_any": ["owned_premises", "rented_premises", "stock"]}, {"q": "property.insured", "eq": "outdated"}]}},
-        {"level": "possible", "reason": "Κρίσιμες εγκαταστάσεις ή αποθέματα· δεν είναι γνωστό αν και πώς είναι ασφαλισμένα.",
-         "when": {"all": [{"q": "property.assets", "includes_any": ["owned_premises", "rented_premises", "stock"]}, {"q": "property.insured", "unresolved": true}]}},
-        {"level": "not_priority", "reason": "Ασφαλισμένα στην πραγματική τους αξία.",
-         "when": {"all": [{"q": "property.assets", "includes_any": ["owned_premises", "rented_premises", "stock"]}, {"q": "property.insured", "eq": "full"}]}},
-        {"level": "not_priority", "reason": "Δεν δηλώθηκαν κρίσιμες εγκαταστάσεις ή αποθέματα.",
-         "when": {"q": "property.assets", "answered": true}}
+        {"level": "confirmed", "reason": "Κρίσιμη περιουσία χωρίς ή με μερική ασφάλιση.", "when": {"q": "property.insured", "eq": "no"}},
+        {"level": "possible", "reason": "Ασφαλισμένη, αλλά με παλιά ποσά.", "when": {"q": "property.insured", "eq": "outdated"}},
+        {"level": "not_priority", "reason": "Ασφαλισμένη στην πραγματική αξία ή χωρίς κρίσιμη περιουσία.",
+         "when": {"any": [{"q": "property.insured", "eq": "yes"}, {"q": "property.assets", "includes": "none"}]}}
       ]
     },
     {
-      "id": "equipment_protection", "pillar": "operations", "axis": "property",
-      "title": "Προστασία εξοπλισμού",
-      "evidence": ["property.assets", "property.equipment_dependency", "property.insured"],
-      "statements": {
-        "confirmed": "Η λειτουργία σας εξαρτάται από τον εξοπλισμό — η προστασία του από βλάβη ή ζημιά αποτελεί προτεραιότητα.",
-        "possible": "Αξίζει να εξετάσουμε τι θα συνέβαινε στη λειτουργία αν χαλούσε ένα βασικό μηχάνημα.",
-        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για τον εξοπλισμό σας.",
-        "not_priority": "Η προστασία εξοπλισμού δεν αναδείχθηκε ως προτεραιότητα αυτή τη στιγμή."
-      },
-      "rules": [
-        {"level": "confirmed", "reason": "Μια βλάβη θα σταματούσε τη δουλειά για εβδομάδες.",
-         "when": {"all": [{"q": "property.assets", "includes": "equipment"}, {"q": "property.equipment_dependency", "eq": "weeks"}]}},
-        {"level": "confirmed", "reason": "Μια βλάβη θα σταματούσε τη δουλειά για μέρες και ο εξοπλισμός δεν είναι πλήρως ασφαλισμένος.",
-         "when": {"all": [{"q": "property.assets", "includes": "equipment"}, {"q": "property.equipment_dependency", "eq": "days"}, {"q": "property.insured", "in": ["no", "partial"]}]}},
-        {"level": "not_priority", "reason": "Υπάρχει άμεση εναλλακτική και ο εξοπλισμός είναι ασφαλισμένος στην πραγματική του αξία.",
-         "when": {"all": [{"q": "property.assets", "includes": "equipment"}, {"q": "property.equipment_dependency", "eq": "immediately"}, {"q": "property.insured", "eq": "full"}]}},
-        {"level": "possible", "reason": "Ο εξοπλισμός είναι κρίσιμος· χρειάζεται έλεγχος της επάρκειας της προστασίας.",
-         "when": {"q": "property.assets", "includes": "equipment"}},
-        {"level": "not_priority", "reason": "Δεν δηλώθηκε κρίσιμος εξοπλισμός.",
-         "when": {"q": "property.assets", "answered": true}}
-      ]
-    },
-    {
-      "id": "fleet", "pillar": "operations", "axis": "property",
-      "title": "Προστασία εταιρικού στόλου",
-      "evidence": ["property.assets", "property.fleet_size", "property.insured"],
-      "statements": {
-        "confirmed": "Τα οχήματα είναι μέρος της καθημερινής σας λειτουργίας — η προστασία του στόλου είναι προτεραιότητα.",
-        "possible": "Αξίζει να εξετάσουμε συνολικά την ασφάλιση των οχημάτων της επιχείρησης.",
-        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για τα οχήματα της επιχείρησης.",
-        "not_priority": "Η προστασία στόλου δεν αφορά την επιχείρηση σήμερα."
-      },
-      "rules": [
-        {"level": "confirmed", "reason": "Οχήματα κρίσιμα για τη λειτουργία, με μερική ή καμία ασφάλιση περιουσίας.",
-         "when": {"all": [{"q": "property.assets", "includes": "vehicles"}, {"q": "property.insured", "in": ["no", "partial"]}]}},
-        {"level": "possible", "reason": "Η επιχείρηση χρησιμοποιεί δύο ή περισσότερα οχήματα: εξέταση ενιαίου προγράμματος στόλου.",
-         "when": {"all": [{"q": "property.assets", "includes": "vehicles"}, {"q": "property.fleet_size", "gte": 2}]}},
-        {"level": "possible", "reason": "Οχήματα κρίσιμα για τη λειτουργία.",
-         "when": {"q": "property.assets", "includes": "vehicles"}},
-        {"level": "not_priority", "reason": "Δεν δηλώθηκαν οχήματα.",
-         "when": {"q": "property.assets", "answered": true}}
-      ]
-    },
-    {
-      "id": "liability", "pillar": "operations", "axis": "liability",
+      "id": "liability", "pillar": "operations", "axis": "risk",
       "title": "Αστική ευθύνη",
-      "evidence": ["liability.exposure", "liability.covered"],
+      "evidence": ["risk.exposure", "risk.covered"],
       "statements": {
-        "confirmed": "Η επαφή σας με πελάτες και τρίτους κάνει την κάλυψη αστικής ευθύνης προτεραιότητα για την επιχείρησή σας.",
+        "confirmed": "Η επαφή σας με πελάτες και τρίτους κάνει την κάλυψη αστικής ευθύνης προτεραιότητα.",
         "possible": "Αξίζει να ελέγξουμε αν η αστική ευθύνη ταιριάζει στη σημερινή σας δραστηριότητα.",
         "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για την επαφή της επιχείρησης με τρίτους.",
-        "not_priority": "Η επαφή με τρίτους είναι περιορισμένη — δεν αναδείχθηκε ως προτεραιότητα."
+        "not_priority": "Η αστική ευθύνη δεν αναδείχθηκε ως προτεραιότητα."
       },
       "rules": [
-        {"level": "not_priority", "reason": "Ελάχιστη επαφή με τρίτους.", "when": {"q": "liability.exposure", "includes": "limited"}},
-        {"level": "confirmed", "reason": "Επαφή με πελάτες ή τρίτους χωρίς ασφάλιση αστικής ευθύνης.",
-         "when": {"all": [{"q": "liability.exposure", "answered": true}, {"q": "liability.covered", "eq": "no"}]}},
-        {"level": "possible", "reason": "Υπάρχει κάλυψη· προτείνεται έλεγχος ορίων και δραστηριοτήτων που καλύπτονται.",
-         "when": {"all": [{"q": "liability.exposure", "answered": true}, {"q": "liability.covered", "eq": "yes"}]}},
-        {"level": "possible", "reason": "Επαφή με τρίτους· δεν είναι γνωστό αν υπάρχει κάλυψη.",
-         "when": {"q": "liability.exposure", "answered": true}}
+        {"level": "confirmed", "reason": "Πελάτες στον χώρο χωρίς ασφάλιση αστικής ευθύνης.",
+         "when": {"all": [{"q": "risk.exposure", "includes": "visitors"}, {"q": "risk.covered", "answered": true}, {"not": {"q": "risk.covered", "includes": "liability"}}]}},
+        {"level": "possible", "reason": "Πελάτες στον χώρο· υπάρχει κάλυψη ή δεν διευκρινίστηκε — έλεγχος ορίων.", "when": {"q": "risk.exposure", "includes": "visitors"}},
+        {"level": "not_priority", "reason": "Δεν δηλώθηκαν πελάτες στον χώρο.", "when": {"q": "risk.exposure", "answered": true}}
       ]
     },
     {
-      "id": "cyber", "pillar": "operations", "axis": "cyber",
+      "id": "cyber", "pillar": "operations", "axis": "risk",
       "title": "Κυβερνοκίνδυνοι & δεδομένα",
-      "evidence": ["cyber.dependency", "cyber.data", "cyber.backup", "cyber.covered"],
+      "evidence": ["risk.exposure", "risk.covered"],
       "statements": {
         "confirmed": "Τα ψηφιακά σας συστήματα και τα δεδομένα των πελατών σας είναι κρίσιμα — η προστασία τους αποτελεί προτεραιότητα.",
         "possible": "Αξίζει να εξετάσουμε πώς θα αντιμετωπίζατε ένα «πάγωμα» των συστημάτων ή μια διαρροή δεδομένων.",
         "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για τα ψηφιακά σας συστήματα.",
-        "not_priority": "Η λειτουργία δεν εξαρτάται σημαντικά από ψηφιακά συστήματα — δεν αναδείχθηκε ως προτεραιότητα."
+        "not_priority": "Οι κυβερνοκίνδυνοι δεν αναδείχθηκαν ως προτεραιότητα."
       },
       "rules": [
-        {"level": "confirmed", "reason": "Απόλυτη εξάρτηση από ψηφιακά συστήματα χωρίς κάλυψη κυβερνοκινδύνων.",
-         "when": {"all": [{"q": "cyber.dependency", "eq": "critical"}, {"q": "cyber.covered", "eq": "no"}]}},
-        {"level": "confirmed", "reason": "Διαχείριση ευαίσθητων δεδομένων ή πληρωμών χωρίς κάλυψη κυβερνοκινδύνων.",
-         "when": {"all": [{"q": "cyber.dependency", "in": ["medium", "critical"]}, {"q": "cyber.data", "includes_any": ["health", "financial", "payments"]}, {"q": "cyber.covered", "eq": "no"}]}},
-        {"level": "possible", "reason": "Υπάρχει κάλυψη· προτείνεται έλεγχος επάρκειας.",
-         "when": {"all": [{"q": "cyber.dependency", "in": ["medium", "critical"]}, {"q": "cyber.covered", "eq": "yes"}]}},
-        {"level": "possible", "reason": "Σημαντική ψηφιακή εξάρτηση.",
-         "when": {"q": "cyber.dependency", "in": ["medium", "critical"]}},
-        {"level": "not_priority", "reason": "Μικρή εξάρτηση από ψηφιακά συστήματα.",
-         "when": {"q": "cyber.dependency", "eq": "low"}}
-      ]
-    },
-    {
-      "id": "business_interruption", "pillar": "operations", "axis": "operations",
-      "title": "Διακοπή εργασιών & ρευστότητα",
-      "evidence": ["ops.closure_costs", "ops.cover_period", "ops.monthly_fixed"],
-      "statements": {
-        "confirmed": "Ένα απρόοπτο δεν πρέπει να γίνει κρίση ρευστότητας — η κάλυψη των σταθερών εξόδων σε περίοδο διακοπής είναι προτεραιότητα.",
-        "possible": "Αξίζει να δούμε πώς θα καλύπτονταν τα σταθερά έξοδα αν η επιχείρηση σταματούσε για λίγο.",
-        "info_needed": "Θα χρειαστούμε περισσότερες πληροφορίες για τα σταθερά έξοδα της επιχείρησης.",
-        "not_priority": "Η επιχείρηση αντέχει μια περίοδο διακοπής — δεν αναδείχθηκε ως προτεραιότητα."
-      },
-      "rules": [
-        {"level": "not_priority", "reason": "Δεν υπάρχουν σημαντικά σταθερά έξοδα.", "when": {"q": "ops.closure_costs", "includes": "none"}},
-        {"level": "confirmed", "reason": "Τα σταθερά έξοδα καλύπτονται χωρίς έσοδα για λιγότερο από 3 μήνες.",
-         "when": {"q": "ops.cover_period", "in": ["lt1", "1to3"]}},
-        {"level": "possible", "reason": "Τα σταθερά έξοδα καλύπτονται για 3 έως 6 μήνες.",
-         "when": {"q": "ops.cover_period", "eq": "3to6"}},
-        {"level": "not_priority", "reason": "Τα σταθερά έξοδα καλύπτονται για περισσότερο από 6 μήνες.",
-         "when": {"q": "ops.cover_period", "eq": "gt6"}},
-        {"level": "possible", "reason": "Υπάρχουν σταθερά έξοδα· δεν είναι γνωστό για πόσο θα καλύπτονταν χωρίς έσοδα.",
-         "when": {"q": "ops.closure_costs", "answered": true}}
+        {"level": "confirmed", "reason": "Δεδομένα πελατών ή κρίσιμα συστήματα χωρίς κάλυψη κυβερνοκινδύνων.",
+         "when": {"all": [{"q": "risk.exposure", "includes_any": ["data", "critical_it"]}, {"q": "risk.covered", "answered": true}, {"not": {"q": "risk.covered", "includes": "cyber"}}]}},
+        {"level": "possible", "reason": "Ψηφιακή εξάρτηση· υπάρχει κάλυψη ή δεν διευκρινίστηκε.", "when": {"q": "risk.exposure", "includes_any": ["data", "critical_it"]}},
+        {"level": "not_priority", "reason": "Δεν δηλώθηκε ψηφιακή εξάρτηση.", "when": {"q": "risk.exposure", "answered": true}}
       ]
     }
   ]

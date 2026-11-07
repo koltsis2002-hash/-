@@ -10,7 +10,7 @@ DATA_DIR = Path(__file__).parent / "data"
 QUESTION_TYPES = ("yes_no", "single", "multi", "number")
 YES_NO_OPTIONS = [{"value": "yes", "label": "Ναι"}, {"value": "no", "label": "Όχι"}]
 LEVELS = ("confirmed", "possible", "info_needed", "not_priority")
-PILLARS = ("people", "staff", "operations")
+PILLARS = ("people", "staff", "savings", "operations")
 CONDITION_OPERATORS = ("eq", "in", "includes", "includes_any", "gte", "lte", "answered", "unresolved")
 KNOWLEDGE_KINDS = ("faq", "product", "term", "limitation", "argument", "example")
 
@@ -36,6 +36,15 @@ class Content:
 
     def axis_title(self, axis_id) -> str:
         return next(a["title"] for a in self.axes if a["id"] == axis_id)
+
+    @property
+    def default_topics(self) -> list:
+        return [a["id"] for a in self.axes if a.get("priority")]
+
+    def topics(self, selected) -> list:
+        """Selected categories in their fixed priority order; none selected means the priority ones."""
+        chosen = [a["id"] for a in self.axes if a["id"] in (selected or ())]
+        return chosen or self.default_topics
 
     @property
     def categories(self) -> set:

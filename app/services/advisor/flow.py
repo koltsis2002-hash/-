@@ -52,23 +52,22 @@ def evaluate(cond, ctx: FlowContext) -> bool:
 class QuestionFlow:
     """Visible questions in conversation order, and the answers that still count.
 
+    Only questions of the selected categories are asked, always in the fixed category priority order.
     Visibility is computed in file order (a condition may only refer to earlier questions), so a changed
     answer hides its follow-ups and their stored answers stop counting without being deleted.
-    Axes the advisor marked as interests come first; the rest keep the default order.
     """
 
-    def __init__(self, content, answers: dict, interests=()):
+    def __init__(self, content, answers: dict, topics=()):
         self.content = content
         self.stored = answers
+        self.axis_order = content.topics(topics)
         active, visible_ids = {}, set()
         for q in content.questions:
-            if evaluate(q["show_if"], FlowContext(active, visible_ids)):
+            if q["axis"] in self.axis_order and evaluate(q["show_if"], FlowContext(active, visible_ids)):
                 visible_ids.add(q["id"])
                 if q["id"] in answers:
                     active[q["id"]] = answers[q["id"]]
-        axis_order = [a["id"] for a in content.axes]
-        preferred = [a for a in axis_order if a in interests] + [a for a in axis_order if a not in interests]
-        rank = {a: i for i, a in enumerate(preferred)}
+        rank = {a: i for i, a in enumerate(self.axis_order)}
         file_rank = {q["id"]: i for i, q in enumerate(content.questions)}
         self.visible = sorted(
             (q for q in content.questions if q["id"] in visible_ids),
@@ -76,7 +75,6 @@ class QuestionFlow:
         )
         self.visible_ids = visible_ids
         self.active = active
-        self.axis_order = preferred
 
     def context(self) -> FlowContext:
         return FlowContext(self.active, self.visible_ids)

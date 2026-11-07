@@ -126,6 +126,7 @@ class BusinessAdvisorService:
                 presentation_id=p.id,
                 business_name=contact.company if contact else None,
                 owner_name=contact.full_name if contact else None,
+                interests=self.content.default_topics,
             ))
         return p
 
@@ -158,9 +159,9 @@ class BusinessAdvisorService:
             raise ValidationError(f"Μη επιτρεπτά πεδία για εμφάνιση: {', '.join(sorted(unknown))}")
         axis_ids = [a["id"] for a in self.content.axes]
         if set(interests) - set(axis_ids):
-            raise ValidationError("Άγνωστο θέμα ενδιαφέροντος")
+            raise ValidationError("Άγνωστη κατηγορία ερωτήσεων")
         prep.shared_fields = [f for f in SHAREABLE_FIELDS if f in shared]
-        prep.interests = [a for a in axis_ids if a in interests]
+        prep.interests = self.content.topics(interests)
         saved = self.preparations.save(prep)
         self._touch(presentation_id)
         return saved
@@ -177,7 +178,7 @@ class BusinessAdvisorService:
     def assess(self, presentation_id) -> Assessment:
         prep = self.preparation(presentation_id)
         flow = QuestionFlow(self.content, self.answers.for_presentation(presentation_id), prep.interests)
-        needs = assess_needs(self.content, flow, prep.interests)
+        needs = assess_needs(self.content, flow)
         catalog = self.catalog()
         return Assessment(flow, needs, recommend(self.content, needs, catalog), catalog)
 
@@ -243,6 +244,16 @@ class BusinessAdvisorService:
             self._touch(p.id)
         return self.client_view(p.id)
 
+    def set_topics(self, presentation_id, topics) -> dict:
+        """Chooses the question categories for this meeting, from the preparation or during the presentation."""
+        self.get(presentation_id)
+        if not isinstance(topics, list) or set(topics) - {a["id"] for a in self.content.axes}:
+            raise ValidationError("Άγνωστη κατηγορία ερωτήσεων")
+        prep = self.preparation(presentation_id)
+        prep.interests = self.content.topics(topics)
+        self.preparations.save(prep)
+        return self.client_view(presentation_id)
+
     def clear_answer(self, presentation_id, question_id) -> dict:
         self.get(presentation_id)
         self.answers.delete(presentation_id, question_id)
@@ -275,7 +286,7 @@ class BusinessAdvisorService:
             "position": {"screen": p.current_screen, "question": p.current_question},
             "business": shared,
             "business_labels": {f: FIELD_LABELS[f] for f in shared},
-            "emphasis": list(prep.interests),
+            "topics": a.flow.axis_order,
             "content": content.presentation,
             "axes": content.axes,
             "pillars": content.pillars,

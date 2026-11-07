@@ -1,7 +1,7 @@
 """NeedsAssessment: interpretable rules turn the active answers into need levels. No numeric risk scores."""
 from dataclasses import dataclass
 
-from app.services.advisor.content import LEVELS, PILLARS
+from app.services.advisor.content import LEVELS
 from app.services.advisor.flow import QuestionFlow, evaluate, is_answered
 
 FALLBACK_REASON = "Δεν ισχύει κανένας κανόνας: το θέμα δεν συζητήθηκε ή οι απαντήσεις ήταν «Δεν γνωρίζω» / «Παράλειψη»."
@@ -25,10 +25,13 @@ class AssessedNeed:
         return self.level in ("confirmed", "possible")
 
 
-def assess_needs(content, flow: QuestionFlow, interests=()) -> list[AssessedNeed]:
+def assess_needs(content, flow: QuestionFlow) -> list[AssessedNeed]:
+    """Needs of the selected categories. Priority needs first, ordered by the fixed category priority."""
     ctx = flow.context()
     assessed = []
     for index, need in enumerate(content.needs):
+        if need["axis"] not in flow.axis_order:
+            continue
         level, reason = "info_needed", FALLBACK_REASON
         for rule in need["rules"]:
             if evaluate(rule["when"], ctx):
@@ -45,8 +48,11 @@ def assess_needs(content, flow: QuestionFlow, interests=()) -> list[AssessedNeed
             evidence=evidence, discussed=discussed,
         )))
 
+    axis_rank = {a: i for i, a in enumerate(flow.axis_order)}
+
     def priority(item):
         index, n = item
-        return LEVELS.index(n.level), PILLARS.index(n.pillar), 0 if n.axis in interests else 1, index
+        group = 0 if n.is_priority else LEVELS.index(n.level) - 1
+        return group, axis_rank[n.axis], LEVELS.index(n.level), index
 
     return [n for _, n in sorted(assessed, key=priority)]

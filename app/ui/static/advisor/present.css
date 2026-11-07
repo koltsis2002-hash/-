@@ -84,7 +84,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .welcome .business b { color: var(--orange); }
 .welcome .sub { font-size: clamp(18px, 1.7vw, 24px); color: var(--muted); max-width: 34ch; margin: 0 0 34px; }
 .welcome .btn { min-height: 58px; padding: 0 30px; font-size: 18px; }
-.pillars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 48px; max-width: 640px; }
+.pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 18px; margin-top: 48px; max-width: 760px; }
 .pillars div { border-top: 3px solid var(--ink); padding-top: 10px; font-weight: 600; color: var(--ink); font-size: 15px; }
 .pillars b { display: block; font-family: var(--display); color: var(--orange); font-size: 18px; }
 .stripes { position: relative; height: min(70vh, 560px); }
@@ -191,6 +191,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .axes button.done::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ink); }
 .axes button.current { background: var(--orange); color: #fff; }
 .axes button.current::before { background: #fff; }
+.axes button.pick { background: #fff; color: var(--orange-deep); box-shadow: inset 0 0 0 1.5px var(--orange); }
+.sheet label .badge { margin-left: 6px; }
 .qcard { background: #fff; border: 1.5px solid var(--rule); border-radius: 24px; padding: clamp(24px, 3.2vw, 46px); max-width: 980px; margin: 0 auto; animation: rise .45s var(--ease) both; }
 .qcard .axis { text-transform: uppercase; letter-spacing: .18em; font-size: 12px; font-weight: 700; color: var(--orange); margin: 0 0 6px; display: flex; justify-content: space-between; gap: 10px; }
 .qcard .axis span:last-child { color: var(--muted); letter-spacing: .04em; text-transform: none; font-weight: 600; }
@@ -249,7 +251,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .lv-possible i, i.lv-possible { background: #fff; box-shadow: inset 0 0 0 2px var(--orange); }
 .lv-info_needed i, i.lv-info_needed { background: #fff; box-shadow: inset 0 0 0 2px #c4c2bd; }
 .lv-not_priority i, i.lv-not_priority { background: var(--card); }
-.map { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.map { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; align-items: start; }
 .map .col h3 { font-size: 17px; margin: 0 0 12px; display: flex; gap: 8px; align-items: baseline; }
 .map .col h3 b { color: var(--orange); font-size: 15px; }
 .tiles { display: grid; gap: 8px; }

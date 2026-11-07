@@ -21,10 +21,12 @@ def advisor(services, tmp_path):
     return services.advisor
 
 
-def run(advisor, answers, prep=None, shared=(), interests=()):
+def run(advisor, answers, prep=None, shared=(), topics=None):
     p = advisor.create("2026-11-07")
     if prep:
-        advisor.save_preparation(p.id, prep, shared=list(shared), interests=list(interests))
+        advisor.save_preparation(p.id, prep, shared=list(shared), interests=[])
+    if topics:
+        advisor.set_topics(p.id, topics)
     view = advisor.client_view(p.id)
     for qid, value in answers.items():
         status = value if value in ("unknown", "skipped") else "answered"
@@ -40,84 +42,105 @@ def visible(view):
     return [q["id"] for q in view["flow"]["questions"]]
 
 
-def test_content_is_valid_and_has_6_to_8_core_questions():
+def test_content_is_valid_with_few_targeted_questions():
     c = default_content()
-    assert 6 <= sum(q["core"] for q in c.questions) <= 8
-    assert {q["axis"] for q in c.questions} == {a["id"] for a in c.axes}
+    assert c.default_topics == ["life", "health", "group", "savings"]
+    assert sum(q["core"] for q in c.questions if q["axis"] in c.default_topics) <= 8
+
+
+def test_default_categories_ask_at_most_ten_questions_in_priority_order(advisor):
+    p, view = run(advisor, {"life.partners": "yes", "group.staff": 12, "savings.goal": ["owner"]})
+    assert view["topics"] == ["life", "health", "group", "savings"]
+    assert len(visible(view)) <= 10
+    assert [q["axis"] for q in view["flow"]["questions"]] == sorted(
+        (q["axis"] for q in view["flow"]["questions"]), key=view["topics"].index)
+    assert not any(q.startswith(("loans.", "property.", "risk.")) for q in visible(view))
+    assert {n["axis"] for n in view["needs"]} <= set(view["topics"])
+
+
+def test_choosing_categories(advisor):
+    p, view = run(advisor, {"life.cover": "no"})
+    view = advisor.set_topics(p.id, ["risk", "life"])
+    assert view["topics"] == ["life", "risk"] and visible(view)[0].startswith("life.")
+    assert "health.private" not in visible(view) and "risk.exposure" in visible(view)
+    assert view["flow"]["answers"]["life.cover"]["status"] == "answered"
+    assert advisor.set_topics(p.id, [])["topics"] == ["life", "health", "group", "savings"]
+    with pytest.raises(ValidationError):
+        advisor.set_topics(p.id, ["nope"])
 
 
 def test_content_rejects_condition_on_later_question(tmp_path):
     data = tmp_path / "data"
     shutil.copytree(DATA_DIR, data)
     q = json.loads((data / "questions.json").read_text("utf-8"))
-    q["questions"][0]["show_if"] = {"q": "cyber.covered", "eq": "yes"}
+    q["questions"][0]["show_if"] = {"q": "risk.covered", "eq": "yes"}
     (data / "questions.json").write_text(json.dumps(q, ensure_ascii=False), "utf-8")
     with pytest.raises(ContentError):
         load_content(data)
 
 
 def test_partner_branching(advisor):
-    p, view = run(advisor, {"partners.has": "no"})
-    assert "partners.agreement" not in visible(view) and levels(view)["partner_buyout"] == "not_priority"
-    view = advisor.record_answer(p.id, "partners.has", "answered", "yes")
-    assert "partners.agreement" in visible(view)
-    view = advisor.record_answer(p.id, "partners.agreement", "answered", "no")
+    p, view = run(advisor, {"life.partners": "no"})
+    assert "life.partner_plan" not in visible(view) and levels(view)["partner_buyout"] == "not_priority"
+    view = advisor.record_answer(p.id, "life.partners", "answered", "yes")
+    assert "life.partner_plan" in visible(view)
+    view = advisor.record_answer(p.id, "life.partner_plan", "answered", "no")
     assert levels(view)["partner_buyout"] == "confirmed"
     reason = next(n for n in advisor.assess(p.id).needs if n.id == "partner_buyout").reason
     assert "εξαγοράς" in reason
-    view = advisor.record_answer(p.id, "partners.has", "answered", "no")
-    assert "partners.agreement" not in view["flow"]["answers"]
+    view = advisor.record_answer(p.id, "life.partners", "answered", "no")
+    assert "life.partner_plan" not in view["flow"]["answers"]
 
 
 SCENARIOS = {
     "sole_trader_no_staff": (
-        {"ops.closure_costs": ["rent"], "ops.cover_period": "1to3", "key.dependency": "stop", "key.who": ["owner"],
-         "key.replace_time": "gt12", "key.existing_cover": "no", "partners.has": "no", "succession.plan": "not_yet",
-         "loans.has": "no", "staff.count": 0},
-        {"key_person": "confirmed", "succession": "confirmed", "business_interruption": "confirmed",
-         "group_health": "not_priority", "staff_retention": "not_priority", "partner_buyout": "not_priority"}),
+        {"life.partners": "no", "life.cover": "no", "health.private": "basic", "health.income": "no", "group.staff": 0},
+        {"owner_life": "confirmed", "owner_health": "possible", "income_protection": "confirmed",
+         "group_health": "not_priority", "group_pension": "not_priority", "partner_buyout": "not_priority"}, None),
+    "two_partners": (
+        {"life.partners": "yes", "life.partner_plan": "no", "life.cover": "small"},
+        {"partner_buyout": "confirmed", "owner_life": "possible"}, None),
     "twenty_employees": (
-        {"staff.count": 20, "staff.benefits": ["none"], "staff.goals": ["retain", "health"], "staff.hiring": "hard"},
-        {"group_health": "confirmed", "staff_retention": "confirmed", "group_pension": "possible"}),
+        {"group.staff": 20, "group.current": ["none"], "group.goal": "retain"},
+        {"group_health": "confirmed", "group_pension": "confirmed"}, None),
     "existing_group_benefits": (
-        {"staff.count": 15, "staff.benefits": ["health", "pension"], "staff.review": "no"},
-        {"benefits_review": "confirmed", "group_health": "not_priority", "group_pension": "not_priority"}),
+        {"group.staff": 15, "group.current": ["health", "pension"], "group.goal": "retain"},
+        {"group_health": "not_priority", "group_pension": "not_priority"}, None),
     "business_loans": (
-        {"ops.closure_costs": ["loans", "payroll"], "loans.guarantees": "yes", "loans.repayment": "business"},
-        {"loan_protection": "confirmed"}),
+        {"loans.has": "yes", "loans.covered": "no"}, {"loan_protection": "confirmed"}, ["loans"]),
     "equipment_dependency": (
-        {"property.assets": ["equipment"], "property.equipment_dependency": "weeks"},
-        {"equipment_protection": "confirmed"}),
+        {"property.assets": ["equipment"], "property.insured": "no"}, {"property_protection": "confirmed"}, ["property"]),
     "digital_dependency": (
-        {"cyber.dependency": "critical", "cyber.data": ["customers", "payments"], "cyber.covered": "no"},
-        {"cyber": "confirmed"}),
-    "incomplete_data": ({"key.dependency": "harder"}, {"key_person": "possible", "liability": "info_needed"}),
+        {"risk.exposure": ["data", "critical_it"], "risk.covered": ["none"]}, {"cyber": "confirmed"}, ["risk"]),
+    "savings_for_business_and_owner": (
+        {"savings.goal": ["business", "owner"], "savings.horizon": "5to10"},
+        {"business_savings": "confirmed", "owner_savings": "confirmed"}, None),
+    "incomplete_data": ({"life.cover": "no"}, {"owner_life": "confirmed", "owner_health": "info_needed"}, None),
     "client_skips": (
-        {q: "skipped" for q in ("ops.closure_costs", "key.dependency", "partners.has", "loans.has", "staff.count",
-                                "property.assets", "liability.exposure", "cyber.dependency")},
-        {"key_person": "info_needed", "partner_buyout": "info_needed", "cyber": "info_needed"}),
+        {q: "skipped" for q in ("life.partners", "life.cover", "health.private", "health.income", "group.staff",
+                                "savings.goal")},
+        {"owner_life": "info_needed", "owner_health": "info_needed", "business_savings": "info_needed"}, None),
 }
 
 
 @pytest.mark.parametrize("name", SCENARIOS)
 def test_qa_scenarios(advisor, name):
-    answers, expected = SCENARIOS[name]
-    p, view = run(advisor, answers)
+    answers, expected, topics = SCENARIOS[name]
+    p, view = run(advisor, answers, topics=topics)
     got = levels(view)
     assert {k: got[k] for k in expected} == expected
     assert all(r["status_label"] == NO_PRODUCT for r in view["recommendations"])
     if name == "client_skips":
         assert view["flow"]["handled"] == view["flow"]["total"] and view["recommendations"] == []
-    if name == "business_loans":
-        assert "loans.has" not in visible(view)
     if name == "sole_trader_no_staff":
-        assert "staff.benefits" not in visible(view)
+        assert "group.current" not in visible(view)
+        assert [r["need_id"] for r in view["recommendations"]] == ["owner_life", "income_protection", "owner_health"]
 
 
 def test_answer_validation(advisor):
     p = advisor.create("2026-11-07")
-    for qid, value in [("partners.has", "maybe"), ("staff.count", -1), ("staff.count", "abc"),
-                       ("ops.closure_costs", ["none", "rent"]), ("partners.agreement", "yes")]:
+    for qid, value in [("life.partners", "maybe"), ("group.staff", -1), ("group.staff", "abc"),
+                       ("savings.goal", ["none", "owner"]), ("life.partner_plan", "yes"), ("risk.exposure", ["data"])]:
         with pytest.raises(ValidationError):
             advisor.record_answer(p.id, qid, "answered", value)
 
@@ -126,12 +149,12 @@ def test_session_persists_and_restores(db_path, tmp_path):
     from app.services.context import Services
     with Services.open(db_path, knowledge_dir=tmp_path) as s:
         p = s.advisor.create("2026-11-07")
-        s.advisor.record_answer(p.id, "partners.has", "answered", "yes")
-        s.advisor.set_position(p.id, 6, "partners.agreement")
+        s.advisor.record_answer(p.id, "life.partners", "answered", "yes")
+        s.advisor.set_position(p.id, 6, "life.partner_plan")
     with Services.open(db_path, knowledge_dir=tmp_path) as s:
         view = s.advisor.client_view(p.id)
-        assert view["position"] == {"screen": 6, "question": "partners.agreement"}
-        assert view["flow"]["answers"]["partners.has"]["value"] == "yes"
+        assert view["position"] == {"screen": 6, "question": "life.partner_plan"}
+        assert view["flow"]["answers"]["life.partners"]["value"] == "yes"
 
 
 def test_client_view_never_contains_private_data(advisor):
@@ -139,7 +162,7 @@ def test_client_view_never_contains_private_data(advisor):
     advisor.save_preparation(p.id, {"business_name": "Αλφα ΟΕ", "financial_obligations": "ΔΑΝΕΙΟ-ΚΡΥΦΟ",
                                     "owner_name": "ΟΝΟΜΑ-ΚΡΥΦΟ"}, shared=["business_name"], interests=[])
     advisor.save_internal_notes(p.id, "ΣΗΜΕΙΩΣΗ-ΚΡΥΦΗ")
-    advisor.record_answer(p.id, "partners.has", "answered", "yes")
+    advisor.record_answer(p.id, "life.partners", "answered", "yes")
     payload = json.dumps(advisor.client_view(p.id), ensure_ascii=False)
     assert "Αλφα ΟΕ" in payload
     for secret in ("ΔΑΝΕΙΟ-ΚΡΥΦΟ", "ΟΝΟΜΑ-ΚΡΥΦΟ", "ΣΗΜΕΙΩΣΗ-ΚΡΥΦΗ", "reason", "show_if", "Αιτιολόγηση"):
@@ -147,7 +170,7 @@ def test_client_view_never_contains_private_data(advisor):
 
 
 def test_summary_edit_approval_cycle(advisor):
-    p, _ = run(advisor, {"partners.has": "yes", "partners.agreement": "no"},
+    p, _ = run(advisor, {"life.partners": "yes", "life.partner_plan": "no"},
                prep={"business_name": "Βήτα ΙΚΕ"}, shared=["business_name"])
     s = advisor.summary(p.id)
     assert s.content["business_name"] == "Βήτα ΙΚΕ" and s.content["directions"] and not s.approved_at
@@ -162,15 +185,15 @@ def test_verified_product_is_used_and_changed_document_is_rejected(advisor):
     pdf = products / "oroi.pdf"
     pdf.write_bytes(b"%PDF-1.4 test")
     catalog = {"products": [{
-        "id": "kp", "name": "Πρόγραμμα Δοκιμής", "provider": "Δοκιμή", "categories": ["key_person"],
+        "id": "kp", "name": "Πρόγραμμα Δοκιμής", "provider": "Δοκιμή", "categories": ["owner_life"],
         "document": {"file": "oroi.pdf", "sha256": sha256_file(pdf)}, "benefits": [{"text": "Παροχή", "page": 2}],
         "verified_by": "Χ.Κ.", "verified_on": "2026-11-07"}]}
     (products / "catalog.json").write_text(json.dumps(catalog, ensure_ascii=False), "utf-8")
-    p, view = run(advisor, {"key.dependency": "stop", "key.existing_cover": "no"})
-    rec = next(r for r in view["recommendations"] if r["need_id"] == "key_person")
+    p, view = run(advisor, {"life.cover": "no"})
+    rec = next(r for r in view["recommendations"] if r["need_id"] == "owner_life")
     assert rec["products"][0]["benefits"][0]["source"] == "oroi.pdf, σ. 2"
     pdf.write_bytes(b"%PDF-1.4 changed")
-    rec = next(r for r in advisor.client_view(p.id)["recommendations"] if r["need_id"] == "key_person")
+    rec = next(r for r in advisor.client_view(p.id)["recommendations"] if r["need_id"] == "owner_life")
     assert rec["products"] == [] and rec["status_label"] == NO_PRODUCT
     assert "SHA-256" in advisor.catalog().issues[0].problems[0]
 
@@ -245,7 +268,7 @@ def test_http_end_to_end(base_url):
     pid = headers["Location"].split("/")[3].split("?")[0]
     status, _, _ = http(f"{base_url}/advisor/p/{pid}/prep", {
         "meeting_date": "2026-11-07", "business_name": "Γάμμα <b>ΑΕ</b>", "financial_obligations": "ΚΡΥΦΟ-ΔΑΝΕΙΟ",
-        "share": ["business_name"], "interest": ["partners"], "internal_notes": "ΚΡΥΦΗ-ΣΗΜΕΙΩΣΗ"})
+        "share": ["business_name"], "interest": ["life", "health"], "internal_notes": "ΚΡΥΦΗ-ΣΗΜΕΙΩΣΗ"})
     assert status == 303
     status, headers, html = http(f"{base_url}/advisor/p/{pid}")
     assert status == 200 and "ΚΡΥΦΗ-ΣΗΜΕΙΩΣΗ" in html and "Γάμμα &lt;b&gt;" in html
@@ -257,8 +280,10 @@ def test_http_end_to_end(base_url):
     for secret in ("ΚΡΥΦΗ-ΣΗΜΕΙΩΣΗ", "ΚΡΥΦΟ-ΔΑΝΕΙΟ"):
         assert secret not in page and secret not in api
     status, _, body = http(f"{base_url}/api/present/{pid}/answer",
-                           json_body={"question": "partners.has", "status": "answered", "value": "yes"})
-    assert status == 200 and "partners.agreement" in body
+                           json_body={"question": "life.partners", "status": "answered", "value": "yes"})
+    assert status == 200 and "life.partner_plan" in body and "group.staff" not in body
+    status, _, body = http(f"{base_url}/api/present/{pid}/topics", json_body={"topics": ["life", "group"]})
+    assert status == 200 and "group.staff" in body
     assert http(f"{base_url}/api/present/{pid}/answer", data=b"{}")[0] == 415
     assert http(f"{base_url}/api/present/{pid}/answer", json_body={"question": "x", "status": "answered"})[0] == 400
     assert http(f"{base_url}/api/present/{pid}/answer", json_body={},

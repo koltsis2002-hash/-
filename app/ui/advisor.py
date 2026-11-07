@@ -257,6 +257,8 @@ def _api(req, advisor) -> Response:
     if action == ["answer"]:
         return json_response(advisor.record_answer(pid, data.get("question"), data.get("status"),
                                                    data.get("value"), data.get("note")))
+    if action == ["topics"]:
+        return json_response(advisor.set_topics(pid, data.get("topics")))
     if action == ["clear"]:
         return json_response(advisor.clear_answer(pid, data.get("question")))
     if action == ["position"]:
@@ -373,9 +375,11 @@ def render_workspace(advisor, pid, notice=None) -> str:
             f"<div class='field'><label>{e(label)} {sensitive}{control}</label>"
             f"<label class='share'><input type='checkbox' name='share' value='{name}' {checked}> Εμφάνιση στον πελάτη</label></div>"
         )
+    selected = content.topics(prep.interests)
     interests = "".join(
         f"<label class='check'><input type='checkbox' name='interest' value='{ax['id']}' "
-        f"{'checked' if ax['id'] in prep.interests else ''}> {e(ax['title'])}</label>"
+        f"{'checked' if ax['id'] in selected else ''}> {e(ax['title'])}"
+        + (" <span class='tag info'>προτεραιότητα</span>" if ax.get("priority") else "") + "</label>"
         for ax in content.axes
     )
     shared_preview = "".join(
@@ -459,8 +463,9 @@ def render_workspace(advisor, pid, notice=None) -> str:
         f"<div class='field'><label for='f-date'>Ημερομηνία συνάντησης</label>"
         f"<input id='f-date' type='date' name='meeting_date' value='{e(p.meeting_date)}' required></div>"
         + "".join(fields)
-        + f"<fieldset><legend>Βασικά θέματα ενδιαφέροντος</legend><div class='checks'>{interests}</div>"
-        "<p class='muted small'>Αυτά τα θέματα προηγούνται στη συζήτηση και επισημαίνονται ως «Σχετικό για εσάς».</p></fieldset>"
+        + f"<fieldset><legend>Κατηγορίες ερωτήσεων</legend><div class='checks'>{interests}</div>"
+        "<p class='muted small'>Ρωτάμε μόνο τις επιλεγμένες κατηγορίες, πάντα με τη σειρά: ζωή, υγεία, ομαδικά, "
+        "αποταμίευση. Η επιλογή αλλάζει και μέσα στην παρουσίαση.</p></fieldset>"
         "<div class='private'><label for='f-notes'>Ιδιωτικές σημειώσεις</label>"
         f"<textarea id='f-notes' name='internal_notes' rows='5'>{e(ws.internal_notes)}</textarea>"
         "<p class='small'>Αποθηκεύονται χωριστά και δεν εμφανίζονται ποτέ στην παρουσίαση ή στην περίληψη.</p></div>"

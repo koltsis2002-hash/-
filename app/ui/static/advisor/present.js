@@ -39,8 +39,7 @@
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
     return m ? `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]} ${m[1]}` : esc(iso);
   };
-  const relevant = (axes) => (axes || []).some((a) => S.emphasis.includes(a));
-  const forYou = (axes) => (relevant(axes) ? '<span class="badge">Σχετικό για εσάς</span>' : "");
+  const forYou = () => "";
   const questions = () => S.flow.questions;
   const answerOf = (qid) => S.flow.answers[qid];
   const axisTitle = (id) => (S.axes.find((a) => a.id === id) || {}).title || "";
@@ -317,14 +316,13 @@
 
   function axesChips() {
     const current = questions()[qIndex];
-    const order = [];
-    questions().forEach((q) => { if (!order.includes(q.axis)) order.push(q.axis); });
+    const order = S.topics.filter((ax) => questions().some((q) => q.axis === ax));
     return order.map((ax) => {
       const qs = questions().filter((q) => q.axis === ax);
       const done = qs.every((q) => answerOf(q.id));
       const cur = current && current.axis === ax;
       return `<button data-act="axis" data-axis="${ax}" class="${done ? "done" : ""} ${cur ? "current" : ""}">${esc(axisTitle(ax))}</button>`;
-    }).join("");
+    }).join("") + `<button class="pick" data-act="topics">Επιλογή θεμάτων</button>`;
   }
 
   function qZone() {
@@ -417,7 +415,7 @@
         <button class="btn primary" data-act="goto" data-i="${QUESTIONS}">Στις ερωτήσεις</button></div>`;
     }
     const legend = S.levels.map((l) => `<span class="lv-${l.id}"><i></i>${esc(l.label)}</span>`).join("");
-    const cols = S.pillars.map((p) => {
+    const cols = S.pillars.filter((p) => S.needs.some((n) => n.pillar === p.id)).map((p) => {
       const tiles = S.needs.filter((n) => n.pillar === p.id).map((n) =>
         `<button class="tile ${n.level} ${ui.need === n.id ? "sel" : ""}" data-act="need" data-id="${n.id}"><span>${esc(n.title)}</span><small>${esc(n.level_label)}</small></button>`).join("");
       return `<div class="col"><h3><b>${esc(p.number)}</b>${esc(p.title)}</h3><div class="tiles">${tiles}</div></div>`;
@@ -520,6 +518,16 @@
         <p>Η περίληψη εξάγεται σε PDF μόνο αφού ο σύμβουλος ελέγξει το περιεχόμενό της. Για αλλαγές στο κείμενο χρησιμοποιήστε την επεξεργασία περίληψης στο περιβάλλον του συμβούλου.</p>
         <label><input type="checkbox" id="approve-check"> Έχω ελέγξει το περιεχόμενο της περίληψης και εγκρίνω την εξαγωγή.</label>
         <div class="acts"><button class="btn quiet" data-act="close-overlay">Άκυρο</button><button class="btn primary" data-act="approve" id="approve-btn" disabled>Έγκριση & εξαγωγή PDF</button></div>
+      </div></div>`;
+    }
+    if (overlay === "topics") {
+      const rows = S.axes.map((a) => `<label><input type="checkbox" data-topic="${a.id}" ${S.topics.includes(a.id) ? "checked" : ""}>
+        <span>${esc(a.title)}${a.priority ? ' <span class="badge">προτεραιότητα</span>' : ""}</span></label>`).join("");
+      return `<div class="overlay" data-act="close-overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="Θέματα συζήτησης">
+        <p class="eyebrow">Θέματα συζήτησης</p><h2>Τι θα συζητήσουμε σήμερα;</h2>
+        <p class="muted">Ρωτάμε μόνο τα επιλεγμένα θέματα, με σταθερή σειρά προτεραιότητας. Οι απαντήσεις που έχουν δοθεί δεν χάνονται.</p>
+        ${rows}
+        <div class="acts"><button class="btn quiet" data-act="close-overlay">Άκυρο</button><button class="btn primary" data-act="apply-topics">Εφαρμογή</button></div>
       </div></div>`;
     }
     if (overlay === "exit") {
@@ -704,6 +712,18 @@
         ui.solTab[i] = el.dataset.tab;
         el.parentElement.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b === el));
         patch(`sol-${i}`, solTab(S.recommendations[i], ui.solTab[i]));
+        break;
+      }
+      case "topics": openOverlay("topics"); break;
+      case "apply-topics": {
+        const topics = [...document.querySelectorAll("[data-topic]")].filter((x) => x.checked).map((x) => x.dataset.topic);
+        try {
+          S = await call("POST", "/topics", { topics });
+          overlay = null;
+          qIndex = firstOpen();
+          render(false);
+          saved("✓ Αποθηκεύτηκε");
+        } catch (err) { saved(err.message, true); }
         break;
       }
       case "summary": openOverlay("summary"); break;
