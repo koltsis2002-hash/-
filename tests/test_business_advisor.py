@@ -81,7 +81,7 @@ def test_content_rejects_condition_on_later_question(tmp_path):
 
 def test_partner_branching(advisor):
     p, view = run(advisor, {"life.partners": "no"})
-    assert "life.partner_plan" not in visible(view) and levels(view)["partner_buyout"] == "not_priority"
+    assert "life.partner_plan" not in visible(view) and "partner_buyout" not in levels(view)
     view = advisor.record_answer(p.id, "life.partners", "answered", "yes")
     assert "life.partner_plan" in visible(view)
     view = advisor.record_answer(p.id, "life.partner_plan", "answered", "no")
@@ -96,7 +96,7 @@ SCENARIOS = {
     "sole_trader_no_staff": (
         {"life.partners": "no", "life.cover": "no", "health.private": "basic", "health.income": "no", "group.staff": 0},
         {"owner_life": "confirmed", "owner_health": "possible", "income_protection": "confirmed",
-         "group_health": "not_priority", "group_pension": "not_priority", "partner_buyout": "not_priority"}, None),
+         "group_health": "not_priority", "group_pension": "not_priority"}, None),
     "two_partners": (
         {"life.partners": "yes", "life.partner_plan": "no", "life.cover": "small"},
         {"partner_buyout": "confirmed", "owner_life": "possible"}, None),
@@ -133,8 +133,39 @@ def test_qa_scenarios(advisor, name):
     if name == "client_skips":
         assert view["flow"]["handled"] == view["flow"]["total"] and view["recommendations"] == []
     if name == "sole_trader_no_staff":
-        assert "group.current" not in visible(view)
+        assert "group.current" not in visible(view) and "partner_buyout" not in got
         assert [r["need_id"] for r in view["recommendations"]] == ["owner_life", "income_protection", "owner_health"]
+
+
+def test_owner_without_partners_sees_texts_only_for_themselves(advisor):
+    p, view = run(advisor, {"life.partners": "no", "life.cover": "no", "health.private": "no"})
+    payload = json.dumps(view, ensure_ascii=False)
+    titles = {a["id"]: a["title"] for a in view["axes"]}
+    assert titles["life"] == "Ζωή επιχειρηματία" and titles["health"] == "Υγεία επιχειρηματία"
+    assert "συνεταίρ" not in json.dumps([view["needs"], view["recommendations"], view["matches"],
+                                         view["summary"]["content"]], ensure_ascii=False)
+    assert len(view["content"]["categories"]["life"]) == 1
+    texts = {q["id"]: q["text"] for q in view["flow"]["questions"]}
+    assert texts["health.private"] == "Έχετε ιδιωτική ασφάλεια υγείας;"
+    assert "_solo" not in payload and "partners_only" not in payload and "hide_when_solo" not in payload
+
+
+def test_partner_wording_follows_preparation_until_answered(advisor):
+    p = advisor.create("2026-11-07")
+    advisor.save_preparation(p.id, {"partners": "0"}, shared=[], interests=[])
+    assert {a["id"]: a["title"] for a in advisor.client_view(p.id)["axes"]}["life"] == "Ζωή επιχειρηματία"
+    view = advisor.record_answer(p.id, "life.partners", "answered", "yes")
+    assert {a["id"]: a["title"] for a in view["axes"]}["life"] == "Ζωή επιχειρηματία & συνεταίρων"
+    assert len(view["content"]["categories"]["life"]) == 2
+
+
+def test_solution_matches_list_every_priority_need(advisor):
+    p, view = run(advisor, {"life.partners": "yes", "life.partner_plan": "no", "life.cover": "no",
+                            "health.private": "no", "health.income": "no"})
+    matches = view["matches"]
+    assert [m["need_id"] for m in matches] == [r.need.id for r in advisor.assess(p.id).recommendations]
+    assert len(matches) == 4 and [m["detail"] for m in matches] == [0, 1, 2, None]
+    assert all(m["solutions"] and m["solutions"][0]["documented"] is False for m in matches)
 
 
 def test_answer_validation(advisor):

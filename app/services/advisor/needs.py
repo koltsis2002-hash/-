@@ -1,7 +1,7 @@
 """NeedsAssessment: interpretable rules turn the active answers into need levels. No numeric risk scores."""
 from dataclasses import dataclass
 
-from app.services.advisor.content import LEVELS
+from app.services.advisor.content import LEVELS, variant
 from app.services.advisor.flow import QuestionFlow, evaluate, is_answered
 
 FALLBACK_REASON = "Δεν ισχύει κανένας κανόνας: το θέμα δεν συζητήθηκε ή οι απαντήσεις ήταν «Δεν γνωρίζω» / «Παράλειψη»."
@@ -25,13 +25,14 @@ class AssessedNeed:
         return self.level in ("confirmed", "possible")
 
 
-def assess_needs(content, flow: QuestionFlow) -> list[AssessedNeed]:
+def assess_needs(content, flow: QuestionFlow, solo: bool = False) -> list[AssessedNeed]:
     """Needs of the selected categories. Priority needs first, ordered by the fixed category priority."""
     ctx = flow.context()
     assessed = []
-    for index, need in enumerate(content.needs):
-        if need["axis"] not in flow.axis_order:
+    for index, raw in enumerate(content.needs):
+        if raw["axis"] not in flow.axis_order or (solo and raw.get("hide_when_solo")):
             continue
+        need = variant(raw, solo)
         level, reason = "info_needed", FALLBACK_REASON
         for rule in need["rules"]:
             if evaluate(rule["when"], ctx):

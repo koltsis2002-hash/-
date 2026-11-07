@@ -6,7 +6,8 @@ SUMMARY_FIELDS = ("business_name", "meeting_date", "topics", "priorities", "dire
                   "information_needed", "next_steps")
 
 
-def build_summary(content, presentation, business_name, flow, needs, recommendations) -> dict:
+def build_summary(content, presentation, business_name, flow, needs, recommendations, axis_title=None) -> dict:
+    axis_title = axis_title or content.axis_title
     priorities = [n.statement for n in needs if n.level == "confirmed"]
     if not priorities:
         priorities = [n.statement for n in needs if n.level == "possible"][:MAX_DIRECTIONS]
@@ -29,14 +30,14 @@ def build_summary(content, presentation, business_name, flow, needs, recommendat
     unresolved = [n.title for n in needs if n.level == "info_needed" and n.discussed]
     if unresolved:
         information.append("Περισσότερα στοιχεία για: " + ", ".join(unresolved))
-    undiscussed_axes = [content.axis_title(a) for a in flow.axis_order if a not in flow.discussed_axes()]
+    undiscussed_axes = [axis_title(a) for a in flow.axis_order if a not in flow.discussed_axes()]
     if undiscussed_axes:
         information.append("Θέματα για την επόμενη συζήτηση: " + ", ".join(undiscussed_axes))
 
     return {
         "business_name": business_name or "",
         "meeting_date": presentation.meeting_date,
-        "topics": [content.axis_title(a) for a in flow.discussed_axes()],
+        "topics": [axis_title(a) for a in flow.discussed_axes()],
         "priorities": priorities[:MAX_PRIORITIES],
         "directions": directions,
         "information_needed": information,

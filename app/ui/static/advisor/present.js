@@ -50,7 +50,7 @@
   function subCount(section) {
     if (section === TOPICS) return Math.max(1, topicSlides().length);
     if (section === QUESTIONS) return questions().length + 1;
-    if (section === SOLUTIONS) return Math.max(1, S.recommendations.length);
+    if (section === SOLUTIONS) return S.recommendations.length ? S.recommendations.length + 1 : 1;
     return 1;
   }
 
@@ -409,16 +409,17 @@
       return `<div class="center-col"><h1 class="title">${esc(c.title)}</h1>
         <div class="card3d empty-state"><p class="lead">${esc(c.empty)}</p></div><p class="disclaimer">${esc(S.solution_labels.disclaimer)}</p></div>`;
     }
-    const r = recs[sub];
+    if (sub === 0) return sMatches();
+    const r = recs[sub - 1];
     const status = r.products.length
       ? `<div class="status-pill doc">${esc(r.status_label)}${r.products.map((p) => `<small><b>${esc(p.name)}</b>${p.provider ? ` · ${esc(p.provider)}` : ""}</small>`).join("")}</div>`
       : `<div class="status-pill">${esc(r.status_label)}</div>`;
     const documented = r.products.flatMap((p) => p.benefits);
     const limits = r.products.flatMap((p) => p.limitations);
-    const more = sub === recs.length - 1 && S.more_topics.length
+    const more = sub === recs.length && S.more_topics.length
       ? `<div class="more-topics"><b class="muted">Επίσης για επόμενη συζήτηση:</b>${S.more_topics.map((t) => `<span>${esc(t)}</span>`).join("")}</div>` : "";
     return `<div class="split solution">
-      <div class="depth-1"><p class="eyebrow">Κατεύθυνση ${sub + 1} από ${recs.length} · ${esc(r.need_title)}</p>
+      <div class="depth-1"><p class="eyebrow">Κατεύθυνση ${sub} από ${recs.length} · ${esc(r.need_title)}</p>
         <h1 class="title">${esc(r.title)}</h1>
         <p class="lbl">Γιατί έχει σημασία</p><p class="lead dark">${esc(r.why)}</p>
         <p class="lbl">Κατεύθυνση προστασίας</p><p>${esc(r.direction)}</p>${status}</div>
@@ -428,6 +429,24 @@
         <p class="lbl">Τι εξετάζουμε πριν από οποιαδήποτε πρόταση</p>${list(r.examine)}
         ${limits.length ? `<p class="lbl">Περιορισμοί από τους όρους</p><ul>${limits.map((l) => `<li>${esc(l.text)} <span class="muted">(${esc(l.source)})</span></li>`).join("")}</ul>` : ""}
         ${more}<p class="disclaimer">${esc(S.solution_labels.disclaimer)}</p></div></div>`;
+  }
+
+  /* «Τι λύσεις υπάρχουν για αυτά;» — every identified need next to its solution (see matching.py). */
+  function sMatches() {
+    const c = S.content.solutions;
+    const rows = S.matches.map((m) => {
+      const sol = m.solutions[0] || {};
+      const inner = `<span class="prob"><i class="dot ${m.level}"></i><span><b>${esc(m.problem)}</b><small>${esc(m.level_label)}</small></span></span>
+        <span class="arrow">${ICON.right}</span>
+        <span class="sol"><b>${esc(sol.title)}</b>${sol.documented ? "" : '<small>Προς διερεύνηση</small>'}</span>`;
+      return m.detail === null
+        ? `<div class="card3d match">${inner}</div>`
+        : `<button class="card3d match" data-act="sol-detail" data-sub="${m.detail + 1}">${inner}</button>`;
+    }).join("");
+    return `<div class="split matches-slide">
+      <div><h1 class="title">${esc(c.match_title)}</h1><p class="lead">${esc(c.match_lead)}</p>
+        <p class="disclaimer">${esc(S.solution_labels.disclaimer)}</p></div>
+      <div class="matches">${rows}</div></div>`;
   }
 
   const shortList = (items, max = 5) => {
@@ -731,6 +750,7 @@
         document.getElementById("note")?.focus();
         break;
       case "need": ui.need = el.dataset.id; openOverlay("need"); break;
+      case "sol-detail": sub = Number(el.dataset.sub); dir = "next"; render(true); savePosition(); break;
       case "topics": openOverlay("topics"); break;
       case "apply-topics": {
         const topics = [...document.querySelectorAll("[data-topic]")].filter((x) => x.checked).map((x) => x.dataset.topic);

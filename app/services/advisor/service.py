@@ -18,10 +18,11 @@ from app.database.repositories import (
 from app.models.advisor import (
     ANSWER_STATUSES, SCREEN_COUNT, SHAREABLE_FIELDS, AdvisorPresentation, Answer, Preparation, StoredSummary,
 )
-from app.services.advisor.content import default_content
+from app.services.advisor.content import default_content, variant
 from app.services.advisor.documents import IndexReport, index_documents
 from app.services.advisor.flow import QuestionFlow
 from app.services.advisor.knowledge import AdvisorKnowledgeBase, KnowledgeAnswer
+from app.services.advisor.matching import match_solutions
 from app.services.advisor.needs import assess_needs
 from app.services.advisor.products import Catalog, load_catalog
 from app.services.advisor.recommendations import recommend
@@ -63,6 +64,10 @@ class Assessment:
     needs: list
     recommendations: list
     catalog: Catalog
+    solo: bool
+
+    def axis_title(self, content, axis_id) -> str:
+        return variant(next(a for a in content.axes if a["id"] == axis_id), self.solo)["title"]
 
 
 @dataclass
@@ -178,10 +183,12 @@ class BusinessAdvisorService:
 
     def assess(self, presentation_id) -> Assessment:
         prep = self.preparation(presentation_id)
-        flow = QuestionFlow(self.content, self.answers.for_presentation(presentation_id), prep.interests)
-        needs = assess_needs(self.content, flow)
+        answers = self.answers.for_presentation(presentation_id)
+        flow = QuestionFlow(self.content, answers, prep.interests)
+        solo = _owner_without_partners(answers, prep)
+        needs = assess_needs(self.content, flow, solo)
         catalog = self.catalog()
-        return Assessment(flow, needs, recommend(self.content, needs, catalog), catalog)
+        return Assessment(flow, needs, recommend(self.content, needs, catalog, solo), catalog, solo)
 
     def workspace(self, presentation_id) -> Workspace:
         p = self.get(presentation_id)
@@ -200,7 +207,8 @@ class BusinessAdvisorService:
         prep = self.preparation(p.id)
         a = self.assess(p.id)
         business = prep.business_name if "business_name" in prep.shared_fields else None
-        return build_summary(self.content, p, business, a.flow, a.needs, a.recommendations)
+        return build_summary(self.content, p, business, a.flow, a.needs, a.recommendations,
+                             axis_title=lambda axis_id: a.axis_title(self.content, axis_id))
 
     def summary(self, presentation_id) -> StoredSummary:
         """The advisor's edited summary, or one regenerated from the current answers."""
@@ -289,12 +297,12 @@ class BusinessAdvisorService:
             "business": shared,
             "business_labels": {f: FIELD_LABELS[f] for f in shared},
             "topics": a.flow.axis_order,
-            "content": content.presentation,
-            "axes": content.axes,
+            "content": variant(content.presentation, a.solo),
+            "axes": variant(content.axes, a.solo),
             "pillars": content.pillars,
             "levels": [{"id": k, "label": v} for k, v in content.levels.items()],
             "flow": {
-                "questions": [_client_question(q, shared) for q in a.flow.visible],
+                "questions": [_client_question(variant(q, a.solo), shared) for q in a.flow.visible],
                 "answers": {qid: {"status": ans.status, "value": ans.value, "note": ans.note}
                             for qid, ans in a.flow.active.items()},
                 "handled": a.flow.handled,
@@ -306,6 +314,11 @@ class BusinessAdvisorService:
                       for n in a.needs],
             "recommendations": [_client_recommendation(r, content) for r in a.recommendations[:MAX_DIRECTIONS]],
             "more_topics": [r.need.title for r in a.recommendations[MAX_DIRECTIONS:]],
+            "matches": [{
+                "need_id": r.need.id, "problem": r.need.title, "level": r.need.level,
+                "level_label": r.need.level_label, "detail": i if i < MAX_DIRECTIONS else None,
+                "solutions": match_solutions(r),
+            } for i, r in enumerate(a.recommendations)],
             "solution_labels": content.solution_labels,
             "summary": {"content": summary.content, "approved": summary.approved_at is not None},
         }
@@ -327,6 +340,14 @@ class BusinessAdvisorService:
 
     def _touch(self, presentation_id) -> None:
         self.presentations.update(presentation_id, status=self.get(presentation_id).status)
+
+
+def _owner_without_partners(answers, prep) -> bool:
+    """The answer in the meeting wins; before it, the preparation (0 partners) decides."""
+    answer = answers.get("life.partners")
+    if answer is not None and answer.status == "answered":
+        return answer.value == "no"
+    return prep.partners == 0
 
 
 def _client_question(q, shared) -> dict:

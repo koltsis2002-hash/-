@@ -51,6 +51,26 @@ class Content:
         return {d["category"] for d in self.directions.values()}
 
 
+def variant(obj, solo: bool):
+    """Texts for an owner without partners: a key `x_solo` replaces `x`, and items marked
+    partners_only are dropped. Variant markers never leave this function."""
+    if isinstance(obj, dict):
+        if solo and obj.get("partners_only"):
+            return None
+        out = {}
+        for key, value in obj.items():
+            if key.endswith("_solo") or key in ("partners_only", "hide_when_solo"):
+                continue
+            chosen = obj.get(f"{key}_solo", value) if solo else value
+            if isinstance(value, dict) and isinstance(chosen, dict) and chosen is not value:
+                chosen = {**value, **chosen}
+            out[key] = variant(chosen, solo)
+        return out
+    if isinstance(obj, list):
+        return [item for item in (variant(i, solo) for i in obj) if item is not None]
+    return obj
+
+
 def condition_questions(cond) -> set:
     if cond is None:
         return set()

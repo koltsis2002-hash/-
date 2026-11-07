@@ -1,202 +1,490 @@
 {
-  "_doc": "Βιβλιοθήκη ερωτήσεων. Οι κατηγορίες (axes) με priority=true είναι επιλεγμένες από προεπιλογή και προηγούνται πάντα· οι υπόλοιπες προστίθενται όταν τις επιλέξει ο σύμβουλος. Κάθε ερώτηση: id, axis, core, short, text, hint, type (yes_no | single | multi | number), options, exclusive, show_if (μόνο σε προηγούμενες ερωτήσεις), next, needs, allow_unknown, allow_note. Συνθήκες: {q, eq|in|includes|includes_any|gte|lte|answered|unresolved}, {all:[...]}, {any:[...]}, {not:{...}}.",
+  "_doc": "Βιβλιοθήκη ερωτήσεων. Οι κατηγορίες (axes) με priority=true είναι επιλεγμένες από προεπιλογή και προηγούνται πάντα· οι υπόλοιπες προστίθενται όταν τις επιλέξει ο σύμβουλος. Κάθε ερώτηση: id, axis, core, short, text, hint, type (yes_no | single | multi | number), options, exclusive, show_if (μόνο σε προηγούμενες ερωτήσεις), next, needs, allow_unknown, allow_note. Συνθήκες: {q, eq|in|includes|includes_any|gte|lte|answered|unresolved}, {all:[...]}, {any:[...]}, {not:{...}}. Πεδία με κατάληξη _solo (π.χ. title_solo, text_solo, hint_solo) χρησιμοποιούνται όταν ο επιχειρηματίας δεν έχει συνεταίρους.",
   "axes": [
-    {"id": "life", "title": "Ζωή επιχειρηματία & συνεταίρων", "pillar": "people", "priority": true},
-    {"id": "health", "title": "Υγεία επιχειρηματία & συνεταίρων", "pillar": "people", "priority": true},
-    {"id": "group", "title": "Ομαδικά: συνταξιοδοτικό & υγείας", "pillar": "staff", "priority": true},
-    {"id": "savings", "title": "Αποταμίευση μέσω της επιχείρησης", "pillar": "savings", "priority": true},
-    {"id": "loans", "title": "Δάνεια & εγγυήσεις", "pillar": "people", "priority": false},
-    {"id": "property", "title": "Περιουσία & εξοπλισμός", "pillar": "operations", "priority": false},
-    {"id": "risk", "title": "Αστική ευθύνη & κυβερνοκίνδυνοι", "pillar": "operations", "priority": false}
+    {
+      "id": "life",
+      "title": "Ζωή επιχειρηματία & συνεταίρων",
+      "pillar": "people",
+      "priority": true,
+      "title_solo": "Ζωή επιχειρηματία"
+    },
+    {
+      "id": "health",
+      "title": "Υγεία επιχειρηματία & συνεταίρων",
+      "pillar": "people",
+      "priority": true,
+      "title_solo": "Υγεία επιχειρηματία"
+    },
+    {
+      "id": "group",
+      "title": "Ομαδικά: συνταξιοδοτικό & υγείας",
+      "pillar": "staff",
+      "priority": true
+    },
+    {
+      "id": "savings",
+      "title": "Αποταμίευση μέσω της επιχείρησης",
+      "pillar": "savings",
+      "priority": true
+    },
+    {
+      "id": "loans",
+      "title": "Δάνεια & εγγυήσεις",
+      "pillar": "people",
+      "priority": false
+    },
+    {
+      "id": "property",
+      "title": "Περιουσία & εξοπλισμός",
+      "pillar": "operations",
+      "priority": false
+    },
+    {
+      "id": "risk",
+      "title": "Αστική ευθύνη & κυβερνοκίνδυνοι",
+      "pillar": "operations",
+      "priority": false
+    }
   ],
   "questions": [
     {
-      "id": "life.partners", "axis": "life", "core": true,
+      "id": "life.partners",
+      "axis": "life",
+      "core": true,
       "short": "Συνέταιροι",
       "hint": "Ξεκινάμε από τους ανθρώπους που κρατούν την επιχείρηση όρθια.",
       "text": "Υπάρχουν συνέταιροι στην επιχείρηση;",
       "type": "yes_no",
-      "next": ["life.partner_plan"],
-      "needs": ["partner_buyout", "owner_life"]
+      "next": [
+        "life.partner_plan"
+      ],
+      "needs": [
+        "partner_buyout",
+        "owner_life"
+      ]
     },
     {
-      "id": "life.cover", "axis": "life", "core": true,
+      "id": "life.cover",
+      "axis": "life",
+      "core": true,
       "short": "Ασφάλεια ζωής σήμερα",
       "text": "Αν λείπατε εσείς ή ένας συνέταιρος, υπάρχει σήμερα ασφάλεια ζωής που να στηρίζει την οικογένεια και την επιχείρηση;",
       "type": "single",
       "options": [
-        {"value": "adequate", "label": "Ναι, με επαρκές κεφάλαιο"},
-        {"value": "small", "label": "Ναι, αλλά μικρή ή παλιά"},
-        {"value": "no", "label": "Όχι"}
+        {
+          "value": "adequate",
+          "label": "Ναι, με επαρκές κεφάλαιο"
+        },
+        {
+          "value": "small",
+          "label": "Ναι, αλλά μικρή ή παλιά"
+        },
+        {
+          "value": "no",
+          "label": "Όχι"
+        }
       ],
-      "needs": ["owner_life"]
+      "needs": [
+        "owner_life"
+      ],
+      "text_solo": "Αν λείπατε εσείς, υπάρχει σήμερα ασφάλεια ζωής που να στηρίζει την οικογένεια και την επιχείρηση;"
     },
     {
-      "id": "life.partner_plan", "axis": "life",
+      "id": "life.partner_plan",
+      "axis": "life",
       "short": "Σχέδιο για το μερίδιο συνεταίρου",
       "text": "Αν λείψει ένας συνέταιρος, έχει προβλεφθεί ποιος αγοράζει το μερίδιό του και με ποια χρήματα;",
       "type": "yes_no",
-      "show_if": {"q": "life.partners", "eq": "yes"},
-      "needs": ["partner_buyout"]
+      "show_if": {
+        "q": "life.partners",
+        "eq": "yes"
+      },
+      "needs": [
+        "partner_buyout"
+      ]
     },
     {
-      "id": "health.private", "axis": "health", "core": true,
+      "id": "health.private",
+      "axis": "health",
+      "core": true,
       "short": "Ιδιωτική ασφάλεια υγείας",
       "text": "Έχετε εσείς και οι συνέταιροί σας ιδιωτική ασφάλεια υγείας;",
       "type": "single",
       "options": [
-        {"value": "full", "label": "Ναι, πλήρη"},
-        {"value": "basic", "label": "Ναι, βασική ή μέσω τράπεζας"},
-        {"value": "no", "label": "Όχι"}
+        {
+          "value": "full",
+          "label": "Ναι, πλήρη"
+        },
+        {
+          "value": "basic",
+          "label": "Ναι, βασική ή μέσω τράπεζας"
+        },
+        {
+          "value": "no",
+          "label": "Όχι"
+        }
       ],
-      "needs": ["owner_health"]
+      "needs": [
+        "owner_health"
+      ],
+      "text_solo": "Έχετε ιδιωτική ασφάλεια υγείας;"
     },
     {
-      "id": "health.income", "axis": "health", "core": true,
+      "id": "health.income",
+      "axis": "health",
+      "core": true,
       "short": "Εισόδημα σε περίοδο ασθένειας",
       "text": "Αν δεν μπορούσατε να εργαστείτε για μερικούς μήνες λόγω υγείας, θα συνέχιζε να υπάρχει εισόδημα;",
       "type": "yes_no",
-      "needs": ["income_protection"]
+      "needs": [
+        "income_protection"
+      ]
     },
     {
-      "id": "group.staff", "axis": "group", "core": true,
+      "id": "group.staff",
+      "axis": "group",
+      "core": true,
       "short": "Εργαζόμενοι",
       "hint": "Χωρίς να μετράτε εσάς και τους συνεταίρους.",
       "text": "Πόσους εργαζόμενους απασχολείτε;",
-      "type": "number", "unit": "εργαζόμενοι", "min": 0, "max": 100000, "prefill_from": "employees",
-      "next": ["group.current", "group.goal"],
-      "needs": ["group_health", "group_pension"]
+      "type": "number",
+      "unit": "εργαζόμενοι",
+      "min": 0,
+      "max": 100000,
+      "prefill_from": "employees",
+      "next": [
+        "group.current",
+        "group.goal"
+      ],
+      "needs": [
+        "group_health",
+        "group_pension"
+      ],
+      "hint_solo": "Χωρίς να μετράτε τον εαυτό σας."
     },
     {
-      "id": "group.current", "axis": "group",
+      "id": "group.current",
+      "axis": "group",
       "short": "Ομαδικά που υπάρχουν",
       "text": "Τι υπάρχει σήμερα για το προσωπικό;",
       "type": "multi",
       "options": [
-        {"value": "health", "label": "Ομαδικό υγείας"},
-        {"value": "pension", "label": "Ομαδικό συνταξιοδοτικό"},
-        {"value": "none", "label": "Τίποτα από τα δύο"}
+        {
+          "value": "health",
+          "label": "Ομαδικό υγείας"
+        },
+        {
+          "value": "pension",
+          "label": "Ομαδικό συνταξιοδοτικό"
+        },
+        {
+          "value": "none",
+          "label": "Τίποτα από τα δύο"
+        }
       ],
-      "exclusive": ["none"],
-      "show_if": {"q": "group.staff", "gte": 1},
-      "needs": ["group_health", "group_pension"]
+      "exclusive": [
+        "none"
+      ],
+      "show_if": {
+        "q": "group.staff",
+        "gte": 1
+      },
+      "needs": [
+        "group_health",
+        "group_pension"
+      ]
     },
     {
-      "id": "group.goal", "axis": "group",
+      "id": "group.goal",
+      "axis": "group",
       "short": "Στόχος για το προσωπικό",
       "text": "Τι θα ήταν πιο χρήσιμο για εσάς;",
       "type": "single",
       "options": [
-        {"value": "retain", "label": "Να κρατήσω τους καλούς ανθρώπους"},
-        {"value": "health", "label": "Να προστατέψω την υγεία τους"},
-        {"value": "reserve", "label": "Αποθεματικό για αποζημιώσεις και bonus"},
-        {"value": "none", "label": "Δεν είναι προτεραιότητα τώρα"}
+        {
+          "value": "retain",
+          "label": "Να κρατήσω τους καλούς ανθρώπους"
+        },
+        {
+          "value": "health",
+          "label": "Να προστατέψω την υγεία τους"
+        },
+        {
+          "value": "reserve",
+          "label": "Αποθεματικό για αποζημιώσεις και bonus"
+        },
+        {
+          "value": "none",
+          "label": "Δεν είναι προτεραιότητα τώρα"
+        }
       ],
-      "show_if": {"q": "group.staff", "gte": 1},
-      "needs": ["group_health", "group_pension"]
+      "show_if": {
+        "q": "group.staff",
+        "gte": 1
+      },
+      "needs": [
+        "group_health",
+        "group_pension"
+      ]
     },
     {
-      "id": "savings.goal", "axis": "savings", "core": true,
+      "id": "savings.goal",
+      "axis": "savings",
+      "core": true,
       "short": "Στόχος αποταμίευσης",
       "hint": "Ένα μέρος των κερδών μπορεί να χτίζει κεφάλαιο με τον δικό σας ρυθμό.",
       "text": "Θα σας ενδιέφερε αποταμίευση μέσα από την επιχείρηση;",
       "type": "multi",
       "options": [
-        {"value": "business", "label": "Αποθεματικό για την επιχείρηση"},
-        {"value": "owner", "label": "Κεφάλαιο για εμένα (σύνταξη, μέλλον)"},
-        {"value": "children", "label": "Για τα παιδιά μου"},
-        {"value": "none", "label": "Όχι αυτή τη στιγμή"}
+        {
+          "value": "business",
+          "label": "Αποθεματικό για την επιχείρηση"
+        },
+        {
+          "value": "owner",
+          "label": "Κεφάλαιο για εμένα (σύνταξη, μέλλον)"
+        },
+        {
+          "value": "children",
+          "label": "Για τα παιδιά μου"
+        },
+        {
+          "value": "none",
+          "label": "Όχι αυτή τη στιγμή"
+        }
       ],
-      "exclusive": ["none"],
-      "next": ["savings.horizon"],
-      "needs": ["business_savings", "owner_savings"]
+      "exclusive": [
+        "none"
+      ],
+      "next": [
+        "savings.horizon"
+      ],
+      "needs": [
+        "business_savings",
+        "owner_savings"
+      ]
     },
     {
-      "id": "savings.horizon", "axis": "savings",
+      "id": "savings.horizon",
+      "axis": "savings",
       "short": "Χρονικός ορίζοντας",
       "text": "Σε πόσα χρόνια θα θέλατε να το αξιοποιήσετε;",
       "type": "single",
       "options": [
-        {"value": "lt5", "label": "Σε λιγότερα από 5 χρόνια"},
-        {"value": "5to10", "label": "Σε 5 έως 10 χρόνια"},
-        {"value": "gt10", "label": "Σε περισσότερα από 10 χρόνια"}
+        {
+          "value": "lt5",
+          "label": "Σε λιγότερα από 5 χρόνια"
+        },
+        {
+          "value": "5to10",
+          "label": "Σε 5 έως 10 χρόνια"
+        },
+        {
+          "value": "gt10",
+          "label": "Σε περισσότερα από 10 χρόνια"
+        }
       ],
-      "show_if": {"all": [{"q": "savings.goal", "answered": true}, {"not": {"q": "savings.goal", "includes": "none"}}]},
-      "needs": ["business_savings", "owner_savings"]
+      "show_if": {
+        "all": [
+          {
+            "q": "savings.goal",
+            "answered": true
+          },
+          {
+            "not": {
+              "q": "savings.goal",
+              "includes": "none"
+            }
+          }
+        ]
+      },
+      "needs": [
+        "business_savings",
+        "owner_savings"
+      ]
     },
     {
-      "id": "loans.has", "axis": "loans", "core": true,
+      "id": "loans.has",
+      "axis": "loans",
+      "core": true,
       "short": "Δάνεια ή εγγυήσεις",
       "text": "Υπάρχουν επαγγελματικά δάνεια ή προσωπικές εγγυήσεις;",
       "type": "yes_no",
-      "next": ["loans.covered"],
-      "needs": ["loan_protection"]
+      "next": [
+        "loans.covered"
+      ],
+      "needs": [
+        "loan_protection"
+      ]
     },
     {
-      "id": "loans.covered", "axis": "loans",
+      "id": "loans.covered",
+      "axis": "loans",
       "short": "Κάλυψη δόσεων σε απρόοπτο",
       "text": "Αν λείπατε, θα πληρώνονταν οι δόσεις χωρίς να επιβαρυνθεί η οικογένεια;",
       "type": "yes_no",
-      "show_if": {"q": "loans.has", "eq": "yes"},
-      "needs": ["loan_protection"]
+      "show_if": {
+        "q": "loans.has",
+        "eq": "yes"
+      },
+      "needs": [
+        "loan_protection"
+      ]
     },
     {
-      "id": "property.assets", "axis": "property", "core": true,
+      "id": "property.assets",
+      "axis": "property",
+      "core": true,
       "short": "Κρίσιμα περιουσιακά στοιχεία",
       "text": "Ποια περιουσιακά στοιχεία είναι κρίσιμα για τη λειτουργία σας;",
       "type": "multi",
       "options": [
-        {"value": "premises", "label": "Κτίριο ή κατάστημα"},
-        {"value": "equipment", "label": "Μηχανήματα ή εξοπλισμός"},
-        {"value": "stock", "label": "Εμπορεύματα"},
-        {"value": "vehicles", "label": "Οχήματα"},
-        {"value": "none", "label": "Κανένα ιδιαίτερο"}
+        {
+          "value": "premises",
+          "label": "Κτίριο ή κατάστημα"
+        },
+        {
+          "value": "equipment",
+          "label": "Μηχανήματα ή εξοπλισμός"
+        },
+        {
+          "value": "stock",
+          "label": "Εμπορεύματα"
+        },
+        {
+          "value": "vehicles",
+          "label": "Οχήματα"
+        },
+        {
+          "value": "none",
+          "label": "Κανένα ιδιαίτερο"
+        }
       ],
-      "exclusive": ["none"],
-      "next": ["property.insured"],
-      "needs": ["property_protection"]
+      "exclusive": [
+        "none"
+      ],
+      "next": [
+        "property.insured"
+      ],
+      "needs": [
+        "property_protection"
+      ]
     },
     {
-      "id": "property.insured", "axis": "property",
+      "id": "property.insured",
+      "axis": "property",
       "short": "Ασφάλιση περιουσίας",
       "text": "Είναι ασφαλισμένα στην πραγματική τους αξία;",
       "type": "single",
       "options": [
-        {"value": "yes", "label": "Ναι"},
-        {"value": "outdated", "label": "Ναι, αλλά τα ποσά είναι παλιά"},
-        {"value": "no", "label": "Όχι ή μερικώς"}
+        {
+          "value": "yes",
+          "label": "Ναι"
+        },
+        {
+          "value": "outdated",
+          "label": "Ναι, αλλά τα ποσά είναι παλιά"
+        },
+        {
+          "value": "no",
+          "label": "Όχι ή μερικώς"
+        }
       ],
-      "show_if": {"all": [{"q": "property.assets", "answered": true}, {"not": {"q": "property.assets", "includes": "none"}}]},
-      "needs": ["property_protection"]
+      "show_if": {
+        "all": [
+          {
+            "q": "property.assets",
+            "answered": true
+          },
+          {
+            "not": {
+              "q": "property.assets",
+              "includes": "none"
+            }
+          }
+        ]
+      },
+      "needs": [
+        "property_protection"
+      ]
     },
     {
-      "id": "risk.exposure", "axis": "risk", "core": true,
+      "id": "risk.exposure",
+      "axis": "risk",
+      "core": true,
       "short": "Επαφή με τρίτους και δεδομένα",
       "text": "Ποια από αυτά ισχύουν για την επιχείρησή σας;",
       "type": "multi",
       "options": [
-        {"value": "visitors", "label": "Πελάτες ή επισκέπτες στον χώρο μας"},
-        {"value": "data", "label": "Δεδομένα πελατών ή online πληρωμές"},
-        {"value": "critical_it", "label": "Χωρίς υπολογιστές σταματάμε"},
-        {"value": "none", "label": "Κανένα από αυτά"}
+        {
+          "value": "visitors",
+          "label": "Πελάτες ή επισκέπτες στον χώρο μας"
+        },
+        {
+          "value": "data",
+          "label": "Δεδομένα πελατών ή online πληρωμές"
+        },
+        {
+          "value": "critical_it",
+          "label": "Χωρίς υπολογιστές σταματάμε"
+        },
+        {
+          "value": "none",
+          "label": "Κανένα από αυτά"
+        }
       ],
-      "exclusive": ["none"],
-      "next": ["risk.covered"],
-      "needs": ["liability", "cyber"]
+      "exclusive": [
+        "none"
+      ],
+      "next": [
+        "risk.covered"
+      ],
+      "needs": [
+        "liability",
+        "cyber"
+      ]
     },
     {
-      "id": "risk.covered", "axis": "risk",
+      "id": "risk.covered",
+      "axis": "risk",
       "short": "Υφιστάμενες καλύψεις",
       "text": "Τι υπάρχει ήδη;",
       "type": "multi",
       "options": [
-        {"value": "liability", "label": "Ασφάλιση αστικής ευθύνης"},
-        {"value": "cyber", "label": "Κάλυψη κυβερνοκινδύνων"},
-        {"value": "none", "label": "Τίποτα από τα δύο"}
+        {
+          "value": "liability",
+          "label": "Ασφάλιση αστικής ευθύνης"
+        },
+        {
+          "value": "cyber",
+          "label": "Κάλυψη κυβερνοκινδύνων"
+        },
+        {
+          "value": "none",
+          "label": "Τίποτα από τα δύο"
+        }
       ],
-      "exclusive": ["none"],
-      "show_if": {"all": [{"q": "risk.exposure", "answered": true}, {"not": {"q": "risk.exposure", "includes": "none"}}]},
-      "needs": ["liability", "cyber"]
+      "exclusive": [
+        "none"
+      ],
+      "show_if": {
+        "all": [
+          {
+            "q": "risk.exposure",
+            "answered": true
+          },
+          {
+            "not": {
+              "q": "risk.exposure",
+              "includes": "none"
+            }
+          }
+        ]
+      },
+      "needs": [
+        "liability",
+        "cyber"
+      ]
     }
   ]
 }
