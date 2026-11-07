@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from contextlib import contextmanager
 from dataclasses import fields
@@ -5,6 +6,9 @@ from dataclasses import fields
 from app.core.errors import NotFoundError, ValidationError
 from app.core.timeutil import now_iso
 from app.database.connection import fold
+from app.models.advisor import (
+    AdvisorPresentation, Answer, DocumentPage, IndexedDocument, Preparation, StoredSummary,
+)
 from app.models.entities import Activity, Appointment, Contact, FollowUp, Goal, Production
 
 MANAGED_FIELDS = ("id", "created_at", "updated_at")
@@ -158,3 +162,181 @@ class ProductionRepository(Repository):
     def for_contact(self, contact_id) -> list[Production]:
         return self._select("contact_id = ?", (contact_id,))
 
+
+class AdvisorPresentationRepository(Repository):
+    table = "advisor_presentations"
+    model = AdvisorPresentation
+    default_order = "updated_at DESC, id DESC"
+
+
+PREPARATION_COLUMNS = (
+    "business_name", "owner_name", "industry", "legal_form", "employees", "partners",
+    "facilities", "existing_coverage", "financial_obligations",
+)
+
+
+class PreparationRepository:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def get(self, presentation_id) -> Preparation | None:
+        row = self.conn.execute(
+            "SELECT * FROM advisor_preparations WHERE presentation_id = ?", (presentation_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        values = dict(row)
+        values["interests"] = json.loads(values["interests"])
+        values["shared_fields"] = json.loads(values["shared_fields"])
+        return Preparation(**values)
+
+    def save(self, prep: Preparation) -> Preparation:
+        values = {c: getattr(prep, c) for c in PREPARATION_COLUMNS}
+        values.update(
+            presentation_id=prep.presentation_id, interests=json.dumps(list(prep.interests)),
+            shared_fields=json.dumps(list(prep.shared_fields)), updated_at=now_iso(),
+        )
+        cols = ", ".join(values)
+        marks = ", ".join("?" for _ in values)
+        updates = ", ".join(f"{c} = excluded.{c}" for c in values if c != "presentation_id")
+        with _write(self.conn):
+            self.conn.execute(
+                f"INSERT INTO advisor_preparations ({cols}) VALUES ({marks}) "
+                f"ON CONFLICT (presentation_id) DO UPDATE SET {updates}",
+                tuple(values.values()),
+            )
+        return self.get(prep.presentation_id)
+
+
+class InternalNotesRepository:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def get(self, presentation_id) -> str:
+        row = self.conn.execute(
+            "SELECT notes FROM advisor_internal_notes WHERE presentation_id = ?", (presentation_id,)
+        ).fetchone()
+        return row["notes"] if row else ""
+
+    def save(self, presentation_id, notes: str) -> None:
+        with _write(self.conn):
+            self.conn.execute(
+                "INSERT INTO advisor_internal_notes (presentation_id, notes, updated_at) VALUES (?, ?, ?) "
+                "ON CONFLICT (presentation_id) DO UPDATE SET notes = excluded.notes, updated_at = excluded.updated_at",
+                (presentation_id, notes, now_iso()),
+            )
+
+
+class AnswerRepository:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def for_presentation(self, presentation_id) -> dict[str, Answer]:
+        rows = self.conn.execute(
+            "SELECT * FROM advisor_answers WHERE presentation_id = ? ORDER BY question_id", (presentation_id,)
+        )
+        return {
+            r["question_id"]: Answer(
+                question_id=r["question_id"], status=r["status"],
+                value=None if r["value"] is None else json.loads(r["value"]),
+                note=r["note"], updated_at=r["updated_at"],
+            )
+            for r in rows
+        }
+
+    def save(self, presentation_id, answer: Answer) -> None:
+        value = None if answer.value is None else json.dumps(answer.value, ensure_ascii=False)
+        with _write(self.conn):
+            self.conn.execute(
+                "INSERT INTO advisor_answers (presentation_id, question_id, status, value, note, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (presentation_id, question_id) DO UPDATE SET "
+                "status = excluded.status, value = excluded.value, note = excluded.note, "
+                "updated_at = excluded.updated_at",
+                (presentation_id, answer.question_id, answer.status, value, answer.note, now_iso()),
+            )
+
+    def delete(self, presentation_id, question_id) -> None:
+        with _write(self.conn):
+            self.conn.execute(
+                "DELETE FROM advisor_answers WHERE presentation_id = ? AND question_id = ?",
+                (presentation_id, question_id),
+            )
+
+
+class SummaryRepository:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def get(self, presentation_id) -> StoredSummary | None:
+        row = self.conn.execute(
+            "SELECT * FROM advisor_summaries WHERE presentation_id = ?", (presentation_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        return StoredSummary(
+            presentation_id=row["presentation_id"], content=json.loads(row["content"]), edited=bool(row["edited"]),
+            approved_at=row["approved_at"], updated_at=row["updated_at"],
+        )
+
+    def save(self, presentation_id, content: dict, edited: bool) -> StoredSummary:
+        """Any change to the content withdraws a previous approval."""
+        encoded = json.dumps(content, ensure_ascii=False, sort_keys=True)
+        current = self.get(presentation_id)
+        if current is not None and json.dumps(current.content, ensure_ascii=False, sort_keys=True) == encoded \
+                and current.edited == edited:
+            return current
+        with _write(self.conn):
+            self.conn.execute(
+                "INSERT INTO advisor_summaries (presentation_id, content, edited, approved_at, updated_at) "
+                "VALUES (?, ?, ?, NULL, ?) ON CONFLICT (presentation_id) DO UPDATE SET "
+                "content = excluded.content, edited = excluded.edited, approved_at = NULL, "
+                "updated_at = excluded.updated_at",
+                (presentation_id, encoded, int(edited), now_iso()),
+            )
+        return self.get(presentation_id)
+
+    def approve(self, presentation_id) -> StoredSummary:
+        with _write(self.conn):
+            cur = self.conn.execute(
+                "UPDATE advisor_summaries SET approved_at = ? WHERE presentation_id = ?",
+                (now_iso(), presentation_id),
+            )
+        if cur.rowcount == 0:
+            raise NotFoundError(f"summary for presentation #{presentation_id} not found")
+        return self.get(presentation_id)
+
+
+class DocumentRepository:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def list_all(self) -> list[IndexedDocument]:
+        return [IndexedDocument(**dict(r)) for r in self.conn.execute("SELECT * FROM documents ORDER BY filename")]
+
+    def replace(self, filename: str, sha256: str, pages: list[str]) -> IndexedDocument:
+        with _write(self.conn):
+            self.conn.execute("DELETE FROM documents WHERE filename = ?", (filename,))
+            cur = self.conn.execute(
+                "INSERT INTO documents (filename, sha256, page_count, indexed_at) VALUES (?, ?, ?, ?)",
+                (filename, sha256, len(pages), now_iso()),
+            )
+            self.conn.executemany(
+                "INSERT INTO document_pages (document_id, page, text, folded) VALUES (?, ?, ?, ?)",
+                [(cur.lastrowid, i, text, fold(text)) for i, text in enumerate(pages, start=1)],
+            )
+        return next(d for d in self.list_all() if d.filename == filename)
+
+    def delete(self, filename: str) -> None:
+        with _write(self.conn):
+            self.conn.execute("DELETE FROM documents WHERE filename = ?", (filename,))
+
+    def pages_containing_any(self, folded_terms: list[str], limit: int = 200) -> list[DocumentPage]:
+        if not folded_terms:
+            return []
+        where = " OR ".join("p.folded LIKE ? ESCAPE '\\'" for _ in folded_terms)
+        rows = self.conn.execute(
+            f"SELECT d.filename, p.page, p.text FROM document_pages p JOIN documents d ON d.id = p.document_id "
+            f"WHERE {where} ORDER BY d.filename, p.page LIMIT ?",
+            (*(_like_pattern(t) for t in folded_terms), limit),
+        )
+        return [DocumentPage(filename=r["filename"], page=r["page"], text=r["text"]) for r in rows]

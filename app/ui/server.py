@@ -6,6 +6,7 @@ from urllib.parse import parse_qs, urlparse
 
 from app.core.errors import NotFoundError
 from app.services.context import Services
+from app.ui import advisor
 
 STYLE = """
 body{font-family:-apple-system,system-ui,sans-serif;margin:0;background:#f6f7f9;color:#1d2330}
@@ -28,7 +29,8 @@ def page(title: str, body: str) -> str:
     return (
         f"<!doctype html><html lang='el'><head><meta charset='utf-8'><title>{e(title)} · JARVIS</title>"
         f"<meta name='viewport' content='width=device-width,initial-scale=1'><style>{STYLE}</style></head>"
-        f"<body><nav><a href='/'>Dashboard</a><a href='/contacts'>Contacts</a></nav><main>{body}</main></body></html>"
+        f"<body><nav><a href='/'>Dashboard</a><a href='/contacts'>Contacts</a>"
+        f"<a href='/advisor'>Business Advisor | Επιχειρήσεις</a></nav><main>{body}</main></body></html>"
     )
 
 
@@ -121,11 +123,13 @@ def render_contact(services, contact_id: int) -> str | None:
     ))
 
 
-def make_handler(db_path, today_fn=date.today):
+def make_handler(db_path, today_fn=date.today, knowledge_dir=None):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             url = urlparse(self.path)
             parts = [p for p in url.path.split("/") if p]
+            if parts and parts[0] in advisor.PREFIXES:
+                return self._advisor("GET", parts, url.query)
             with Services.open(db_path) as services:
                 if not parts:
                     html = render_dashboard(services, today_fn())
@@ -139,6 +143,32 @@ def make_handler(db_path, today_fn=date.today):
                 self._send(HTTPStatus.NOT_FOUND, page("Not found", "<h1>Not found</h1>"))
             else:
                 self._send(HTTPStatus.OK, html)
+
+        def do_POST(self):
+            url = urlparse(self.path)
+            parts = [p for p in url.path.split("/") if p]
+            if parts and parts[0] in advisor.PREFIXES:
+                return self._advisor("POST", parts, url.query)
+            self._send(HTTPStatus.METHOD_NOT_ALLOWED, page("Not allowed", "<h1>Not allowed</h1>"))
+
+        def _advisor(self, method, parts, query):
+            length = int(self.headers.get("Content-Length") or 0)
+            if length > advisor.MAX_BODY:
+                self.send_error(HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
+                return
+            body = self.rfile.read(length) if length else b""
+            request = advisor.Request(
+                method=method, parts=parts, query=parse_qs(query),
+                headers={k.lower(): v for k, v in self.headers.items()}, body=body,
+            )
+            response = advisor.handle(request, db_path, knowledge_dir, today_fn)
+            self.send_response(response.status)
+            self.send_header("Content-Type", response.content_type)
+            self.send_header("Content-Length", str(len(response.body)))
+            for name, value in response.headers.items():
+                self.send_header(name, value)
+            self.end_headers()
+            self.wfile.write(response.body)
 
         def _send(self, status, html):
             body = html.encode("utf-8")
@@ -154,5 +184,5 @@ def make_handler(db_path, today_fn=date.today):
     return Handler
 
 
-def make_server(db_path, host="127.0.0.1", port=8765) -> ThreadingHTTPServer:
-    return ThreadingHTTPServer((host, port), make_handler(db_path))
+def make_server(db_path, host="127.0.0.1", port=8765, knowledge_dir=None) -> ThreadingHTTPServer:
+    return ThreadingHTTPServer((host, port), make_handler(db_path, knowledge_dir=knowledge_dir))
