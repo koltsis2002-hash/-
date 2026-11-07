@@ -221,7 +221,7 @@
       old.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id"));
       if (animate) {
         old.classList.add("leaving", `leave-${dir}`);
-        setTimeout(() => old.remove(), 750);
+        setTimeout(() => old.remove(), 520);
       } else {
         old.remove();
       }
@@ -271,8 +271,12 @@
     const vp = document.getElementById("viewport");
     if (!stage || !vp) return;
     setOrientation();
-    const [W, H] = CANVAS[orientation];
-    const scale = Math.min(stage.clientWidth / W, stage.clientHeight / H);
+    // The canvas keeps its design size along the tighter side and stretches along the other one
+    // (within limits), so the slide fills the screen instead of leaving empty bands.
+    const [W0, H0] = CANVAS[orientation];
+    const scale = Math.min(stage.clientWidth / W0, stage.clientHeight / H0);
+    const W = Math.min(stage.clientWidth / scale, W0 * 1.4);
+    const H = Math.min(stage.clientHeight / scale, H0 * 1.3);
     vp.style.width = `${W}px`;
     vp.style.height = `${H}px`;
     vp.style.transform = `translate(-50%, -50%) scale(${scale})`;
@@ -285,17 +289,6 @@
     if (need > have + 1) inner.style.transform = `scale(${Math.max(0.6, have / need)})`;
   }
   window.addEventListener("resize", () => { clearTimeout(fit.t); fit.t = setTimeout(fit, 120); });
-
-  /* Gentle 3D tilt that follows the mouse on desktop; touch devices keep the slide still. */
-  app.addEventListener("pointermove", (ev) => {
-    if (ev.pointerType !== "mouse") return;
-    const vp = document.getElementById("viewport");
-    if (!vp) return;
-    const x = ev.clientX / window.innerWidth - 0.5;
-    const y = ev.clientY / window.innerHeight - 0.5;
-    vp.style.setProperty("--ry", `${(x * 5).toFixed(2)}deg`);
-    vp.style.setProperty("--rx", `${(-y * 4).toFixed(2)}deg`);
-  });
 
   /* ----- screens ------------------------------------------------------------------------------ */
 
