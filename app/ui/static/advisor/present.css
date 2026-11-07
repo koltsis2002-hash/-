@@ -339,6 +339,8 @@ button.card3d:active { transform: translateY(1px) scale(.985); }
 .sheet .acts { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 22px; }
 .sheet label { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; font-weight: 600; color: var(--ink); }
 .sheet label input { width: 22px; height: 22px; accent-color: var(--orange); flex: none; margin-top: 2px; }
+.sheet.doc-sheet { width: min(860px, 100%); padding: 0; background: transparent; box-shadow: none; overflow: auto; }
+.doc-bar { position: sticky; top: 0; z-index: 2; display: flex; justify-content: flex-end; gap: 10px; padding: 10px; margin-bottom: 10px; background: rgba(255, 255, 255, .94); border-radius: 16px; box-shadow: 0 6px 20px -12px rgba(0,0,0,.35); }
 .ended { display: grid; place-items: center; height: 100%; text-align: center; padding: 24px; }
 .ended img { width: 240px; margin-bottom: 26px; }
 

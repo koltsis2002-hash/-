@@ -556,15 +556,9 @@
   function overlayHtml() {
     const wrap = (label, body) => `<div class="overlay" data-act="close-overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(label)}">${body}</div></div>`;
     if (overlay === "summary") {
-      const s = S.summary.content;
-      return wrap("Περίληψη συνάντησης", `
-        <p class="eyebrow">Περίληψη συνάντησης</p><h2>${esc(s.business_name || "Η επιχείρησή σας")}</h2><p class="muted">${greekDate(s.meeting_date)}</p>
-        <h4>Τι συζητήσαμε</h4>${list(s.topics)}
-        <h4>Οι προτεραιότητες που αναδείχθηκαν</h4>${list(s.priorities)}
-        <h4>Προτεινόμενες κατευθύνσεις</h4>${(s.directions || []).map((d) => `<div class="dir"><b>${esc(d.title)}</b>${d.need ? `<br><span class="muted">${esc(d.need)}</span>` : ""}<br>${esc(d.why)}${d.solution ? `<br><i class="muted">${esc(d.solution)}</i>` : ""}</div>`).join("") || '<p class="muted">—</p>'}
-        <h4>Τι χρειάζεται να συγκεντρώσουμε</h4>${list(s.information_needed)}
-        <h4>Τα επόμενα βήματα</h4>${list(s.next_steps, "ol")}
-        <div class="acts"><button class="btn quiet" data-act="close-overlay">Κλείσιμο</button><button class="btn dark" data-act="export">Εξαγωγή PDF</button></div>`);
+      return `<div class="overlay" data-act="close-overlay"><div class="sheet doc-sheet" role="dialog" aria-modal="true" aria-label="Περίληψη συνάντησης">
+        <div class="doc-bar"><button class="btn quiet" data-act="close-overlay">Κλείσιμο</button><button class="btn dark" data-act="export">Εξαγωγή PDF</button></div>
+        ${summaryDoc(S.summary.content)}</div></div>`;
     }
     if (overlay === "need") {
       const n = S.needs.find((x) => x.id === ui.need);
@@ -594,6 +588,33 @@
         <div class="acts"><button class="btn quiet" data-act="close-overlay">Συνέχεια παρουσίασης</button><button class="btn dark" data-act="end">Έξοδος</button></div>`);
     }
     return "";
+  }
+
+  /* Same document as the A4 PDF (app/ui/advisor.py summary_document, styles in summary.css). */
+  function summaryDoc(s) {
+    const a = S.content.advisor;
+    const items = (values, cls, tag = "ul") => (values && values.length
+      ? `<${tag} class="${cls}">${values.map((v) => `<li>${esc(v)}</li>`).join("")}</${tag}>` : '<p class="sd-empty">—</p>');
+    const topics = (s.topics || []).map((t) => `<span class="sd-chip">${esc(t)}</span>`).join("");
+    const dirs = (s.directions || []).map((d, i) => `<div class="sd-dir"><span class="sd-dir-n">${i + 1}</span><div>
+        ${d.need ? `<p class="sd-tag">${esc(d.need)}</p>` : ""}<h3>${esc(d.title)}</h3><p>${esc(d.why)}</p>
+        ${d.solution ? `<p class="sd-solution">${esc(d.solution)}</p>` : ""}</div></div>`).join("");
+    return `<article class="sdoc">
+      <header class="sd-cover"><div class="sd-stripes" aria-hidden="true"><i></i><i></i><i></i></div>
+        <img class="sd-logo" src="/static/advisor/logo-full.png" alt="Κόλτσης Χρήστος — Insurance & Financial Advisor">
+        <p class="sd-eyebrow">Περίληψη συνάντησης</p><h1>${esc(s.business_name || "Η επιχείρησή σας")}</h1><hr class="sd-rule">
+        <p class="sd-meta"><b>${greekDate(s.meeting_date)}</b> · ${esc(a.name)}, ${esc(a.title)}</p>
+        ${topics ? `<div class="sd-topics"><span class="sd-label">Τι συζητήσαμε</span>${topics}</div>` : ""}</header>
+      <section class="sd-sec"><h2><span class="sd-num">01</span>Οι προτεραιότητές σας</h2>${items(s.priorities, "sd-checks")}</section>
+      <section class="sd-sec"><h2><span class="sd-num">02</span>Προτεινόμενες κατευθύνσεις</h2>${dirs ? `<div class="sd-dirs">${dirs}</div>` : '<p class="sd-empty">—</p>'}</section>
+      <div class="sd-cols">
+        <section class="sd-sec"><h2><span class="sd-num">03</span>Τι θα χρειαστούμε</h2>${items(s.information_needed, "sd-todo")}</section>
+        <section class="sd-sec"><h2><span class="sd-num">04</span>Τα επόμενα βήματα</h2>${items(s.next_steps, "sd-steps", "ol")}</section></div>
+      <blockquote class="sd-quote">${a.philosophy.map((x) => `<span>${esc(x)}</span>`).join("")}</blockquote>
+      <footer class="sd-end"><div class="sd-contact"><p class="sd-closing">${S.content.next.closing.map(esc).join("<br>")}</p>
+        <p><b>${esc(a.name)}</b> · ${esc(a.title)}</p><p>${esc(a.phone)} · ${esc(a.email)}</p></div>
+        <img class="sd-partner" src="/static/advisor/nn-partner.png" alt="NN — ${esc(a.partner)}"></footer>
+      <p class="sd-legal">${esc(S.solution_labels.disclaimer)} ${esc(S.content.footer)}</p></article>`;
   }
 
   function openOverlay(name) {

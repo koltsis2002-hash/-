@@ -278,6 +278,7 @@ def shell(title: str, body: str, extra_head: str = "") -> str:
         f"<title>{e(title)} · JARVIS</title><meta name='viewport' content='width=device-width,initial-scale=1'>"
         "<link rel='icon' href='/static/advisor/logo-mark.png'>"
         "<link rel='stylesheet' href='/static/advisor/fonts.css'><link rel='stylesheet' href='/static/advisor/advisor.css'>"
+        "<link rel='stylesheet' href='/static/advisor/summary.css'>"
         f"{extra_head}</head><body class='adv'>"
         "<nav class='topnav'><a href='/'>Dashboard</a><a href='/contacts'>Contacts</a>"
         "<a href='/advisor' class='active'>Business Advisor | Επιχειρήσεις</a></nav>"
@@ -291,6 +292,7 @@ def present_page(pid: int) -> str:
         "<meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'>"
         "<meta name='robots' content='noindex'><link rel='icon' href='/static/advisor/logo-mark.png'>"
         "<link rel='stylesheet' href='/static/advisor/fonts.css'><link rel='stylesheet' href='/static/advisor/present.css'>"
+        "<link rel='stylesheet' href='/static/advisor/summary.css'>"
         f"</head><body data-presentation='{int(pid)}'><div id='app' class='app'>"
         "<div class='loading'><img src='/static/advisor/logo-mark.png' alt=''></div></div>"
         "<script src='/static/advisor/present.js'></script></body></html>"
@@ -502,34 +504,48 @@ def render_workspace(advisor, pid, notice=None) -> str:
     ))
 
 
-def summary_document(summary: dict, advisor_profile: dict, labels: dict, footer: str) -> str:
-    def items(values, tag="ul"):
-        return f"<{tag}>" + "".join(f"<li>{e(v)}</li>" for v in values) + f"</{tag}>" if values else \
-            "<p class='muted'>—</p>"
+def summary_document(summary: dict, presentation: dict, labels: dict) -> str:
+    """Client-facing meeting summary (A4 PDF and previews); styles in static/advisor/summary.css."""
+    a = presentation["advisor"]
 
+    def items(values, cls, tag="ul"):
+        if not values:
+            return "<p class='sd-empty'>—</p>"
+        return f"<{tag} class='{cls}'>" + "".join(f"<li>{e(v)}</li>" for v in values) + f"</{tag}>"
+
+    topics = "".join(f"<span class='sd-chip'>{e(t)}</span>" for t in summary.get("topics", []))
     directions = "".join(
-        f"<li><h3>{e(d['title'])}</h3>"
-        + (f"<p class='doc-need'>{e(d['need'])}</p>" if d.get("need") else "")
-        + f"<p>{e(d.get('why'))}</p>"
-        + (f"<p class='doc-solution'>{e(d['solution'])}</p>" if d.get("solution") else "")
-        + "</li>"
-        for d in summary.get("directions", [])
+        f"<div class='sd-dir'><span class='sd-dir-n'>{i}</span><div>"
+        + (f"<p class='sd-tag'>{e(d['need'])}</p>" if d.get("need") else "")
+        + f"<h3>{e(d.get('title'))}</h3><p>{e(d.get('why'))}</p>"
+        + (f"<p class='sd-solution'>{e(d['solution'])}</p>" if d.get("solution") else "")
+        + "</div></div>"
+        for i, d in enumerate(summary.get("directions", []), start=1)
     )
-    a = advisor_profile
     return (
-        "<article class='doc'>"
-        "<header class='doc-head'><img src='/static/advisor/logo-full.png' alt='Κόλτσης Χρήστος — Insurance & Financial Advisor' class='doc-logo'>"
-        f"<div><p class='doc-eyebrow'>Περίληψη συνάντησης</p><h1>{e(summary.get('business_name') or 'Η επιχείρησή σας')}</h1>"
-        f"<p class='doc-date'>{greek_date(summary.get('meeting_date'))}</p></div></header>"
-        f"<section><h2>Τι συζητήσαμε</h2>{items(summary.get('topics'))}</section>"
-        f"<section><h2>Οι προτεραιότητες που αναδείχθηκαν</h2>{items(summary.get('priorities'))}</section>"
-        "<section><h2>Προτεινόμενες κατευθύνσεις</h2>"
-        + (f"<ol class='doc-dirs'>{directions}</ol>" if directions else "<p class='muted'>—</p>")
-        + "</section>"
-        f"<section><h2>Τι χρειάζεται να συγκεντρώσουμε</h2>{items(summary.get('information_needed'))}</section>"
-        f"<section><h2>Τα επόμενα βήματα</h2>{items(summary.get('next_steps'), 'ol')}</section>"
-        f"<footer class='doc-foot'><div><b>{e(a['name'])}</b><br>{e(a['title'])}<br>{e(a['phone'])} · {e(a['email'])}</div>"
-        f"<p>{e(labels['disclaimer'])} {e(footer)}</p></footer>"
+        "<article class='sdoc'>"
+        "<header class='sd-cover'><div class='sd-stripes' aria-hidden='true'><i></i><i></i><i></i></div>"
+        "<img class='sd-logo' src='/static/advisor/logo-full.png' alt='Κόλτσης Χρήστος — Insurance & Financial Advisor'>"
+        "<p class='sd-eyebrow'>Περίληψη συνάντησης</p>"
+        f"<h1>{e(summary.get('business_name') or 'Η επιχείρησή σας')}</h1><hr class='sd-rule'>"
+        f"<p class='sd-meta'><b>{greek_date(summary.get('meeting_date'))}</b> · {e(a['name'])}, {e(a['title'])}</p>"
+        + (f"<div class='sd-topics'><span class='sd-label'>Τι συζητήσαμε</span>{topics}</div>" if topics else "")
+        + "</header>"
+        f"<section class='sd-sec'><h2><span class='sd-num'>01</span>Οι προτεραιότητές σας</h2>"
+        f"{items(summary.get('priorities'), 'sd-checks')}</section>"
+        "<section class='sd-sec'><h2><span class='sd-num'>02</span>Προτεινόμενες κατευθύνσεις</h2>"
+        + (f"<div class='sd-dirs'>{directions}</div>" if directions else "<p class='sd-empty'>—</p>")
+        + "</section><div class='sd-cols'>"
+        f"<section class='sd-sec'><h2><span class='sd-num'>03</span>Τι θα χρειαστούμε</h2>"
+        f"{items(summary.get('information_needed'), 'sd-todo')}</section>"
+        f"<section class='sd-sec'><h2><span class='sd-num'>04</span>Τα επόμενα βήματα</h2>"
+        f"{items(summary.get('next_steps'), 'sd-steps', 'ol')}</section></div>"
+        "<blockquote class='sd-quote'>" + "".join(f"<span>{e(x)}</span>" for x in a["philosophy"]) + "</blockquote>"
+        "<footer class='sd-end'><div class='sd-contact'>"
+        f"<p class='sd-closing'>{'<br>'.join(e(x) for x in presentation['next']['closing'])}</p>"
+        f"<p><b>{e(a['name'])}</b> · {e(a['title'])}</p><p>{e(a['phone'])} · {e(a['email'])}</p></div>"
+        f"<img class='sd-partner' src='/static/advisor/nn-partner.png' alt='NN — {e(a['partner'])}'></footer>"
+        f"<p class='sd-legal'>{e(labels['disclaimer'])} {e(presentation['footer'])}</p>"
         "</article>"
     )
 
@@ -584,7 +600,7 @@ def render_summary_editor(advisor, pid, notice=None) -> str:
         f"<form method='post' action='/advisor/p/{pid}/summary/regenerate'><button class='btn ghost'>"
         "Αναδημιουργία από τις απαντήσεις</button></form></div>"
         + "<div class='doc-frame'>"
-        + summary_document(s, content.presentation["advisor"], content.solution_labels, content.presentation["footer"])
+        + summary_document(s, content.presentation, content.solution_labels)
         + "</div></div></div>"
     ))
 
@@ -603,10 +619,11 @@ def render_print(advisor, pid) -> str:
         "<!doctype html><html lang='el'><head><meta charset='utf-8'>"
         f"<title>{e(name)}</title><meta name='viewport' content='width=device-width,initial-scale=1'>"
         "<link rel='stylesheet' href='/static/advisor/fonts.css'><link rel='stylesheet' href='/static/advisor/advisor.css'>"
+        "<link rel='stylesheet' href='/static/advisor/summary.css'>"
         "</head><body class='print-page'>"
         "<div class='print-bar'><span>Επιλέξτε «Αποθήκευση ως PDF» στο παράθυρο εκτύπωσης.</span>"
         "<button class='btn primary' id='print-now'>Εκτύπωση / Αποθήκευση PDF</button></div>"
-        + summary_document(s, content.presentation["advisor"], content.solution_labels, content.presentation["footer"])
+        + summary_document(s, content.presentation, content.solution_labels)
         + "<script src='/static/advisor/print.js'></script></body></html>"
     )
 

@@ -128,35 +128,13 @@ ul.plain, ol.plain { padding-left: 18px; margin: 6px 0; }
 .sum-tools { display: flex; justify-content: flex-end; margin-bottom: 10px; }
 .doc-frame { background: var(--card); border-radius: 14px; padding: 18px; }
 
-/* Client-facing summary document (screen preview and A4 print) */
-.doc { background: #fff; max-width: 210mm; margin: 0 auto; padding: 16mm 16mm 12mm; color: var(--text); font-size: 10.5pt; line-height: 1.5; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-.doc-head { display: flex; gap: 10mm; align-items: center; border-bottom: 1mm solid var(--orange); padding-bottom: 6mm; margin-bottom: 6mm; }
-.doc-logo { width: 38mm; height: auto; }
-.doc-eyebrow { text-transform: uppercase; letter-spacing: .2em; font-size: 8pt; font-weight: 700; color: var(--orange); margin: 0 0 2mm; }
-.doc h1 { font-size: 22pt; margin: 0; }
-.doc-date { margin: 1mm 0 0; color: var(--muted); }
-.doc section { margin-bottom: 5mm; break-inside: avoid; }
-.doc h2 { font-size: 12.5pt; margin: 0 0 2mm; padding-left: 3mm; border-left: 1.2mm solid var(--orange); }
-.doc ul, .doc ol { margin: 0; padding-left: 6mm; }
-.doc li { margin-bottom: 1mm; }
-.doc-dirs { list-style: none; padding: 0 !important; display: grid; gap: 3mm; counter-reset: dir; }
-.doc-dirs > li { background: var(--card); border-radius: 2.5mm; padding: 4mm 5mm; counter-increment: dir; break-inside: avoid; }
-.doc-dirs h3 { font-size: 11.5pt; margin: 0 0 1mm; }
-.doc-dirs h3::before { content: "0" counter(dir) "  "; color: var(--orange); }
-.doc-need { font-size: 9pt; color: var(--orange-deep); font-weight: 700; margin: 0 0 1mm; }
-.doc-solution { font-size: 9pt; color: var(--muted); font-style: italic; margin: 1.5mm 0 0; }
-.doc-foot { border-top: .3mm solid var(--rule); padding-top: 3mm; margin-top: 6mm; font-size: 8.5pt; color: var(--muted); display: grid; grid-template-columns: auto 1fr; gap: 8mm; }
-.doc-foot b { color: var(--ink); }
-.doc-foot p { margin: 0; }
-
 .print-page { background: #8a8d92; margin: 0; font-family: "Noto Sans", sans-serif; }
 .print-bar { position: sticky; top: 0; display: flex; justify-content: center; gap: 16px; align-items: center; padding: 10px; background: var(--ink); color: #fff; font-size: 14px; }
-.print-page .doc { margin: 16px auto; min-height: 297mm; }
-@page { size: A4; margin: 0; }
+.print-page .sdoc { margin: 16px auto; }
 @media print {
   .print-bar { display: none; }
   .print-page { background: #fff; }
-  .print-page .doc { margin: 0; box-shadow: none; min-height: auto; }
+  .print-page .sdoc { margin: 0; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
@@ -165,5 +143,4 @@ ul.plain, ol.plain { padding-left: 18px; margin: 6px 0; }
   .side { position: static; }
   .inline-form { grid-template-columns: 1fr; }
   .checks { grid-template-columns: 1fr; }
-  .doc { padding: 18px; }
 }
