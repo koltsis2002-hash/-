@@ -29,8 +29,9 @@ JARVIS — Phase 1 (local core and database) implemented. See `PROJECT_STATUS.md
 │   ├── core/             # Settings, errors, time helpers
 │   ├── models/           # Dataclass entities
 │   ├── database/         # Connection, migrations/*.sql, repositories (only SQL here), backup
-│   ├── services/         # Business logic used by UI and CLI
-│   └── ui/               # Local web UI — imports services only (enforced by tests/test_app.py)
+│   ├── services/         # Business logic used by UI and CLI (advisor/ = Business Advisor, data/*.json = its content)
+│   └── ui/               # Local web UI — imports services only (enforced by tests/test_app.py); static/advisor = presentation assets
+├── knowledge/products/   # Product PDFs + catalog.json for the Business Advisor (git-ignored)
 ├── config/               # settings.example.toml (settings.toml is git-ignored)
 ├── data/                 # Local DB — git-ignored
 ├── backups/              # Backups — git-ignored
@@ -130,7 +131,8 @@ python -m app                              # http://127.0.0.1:8765
 | `app/database/repositories.py` | CRUD and queries; the only module that runs SQL |
 | `app/database/backup.py` | Verified backup and restore |
 | `app/services/context.py` | `Services.open(db_path)` — what the UI and CLI use |
-| `app/ui/server.py` | Local UI: dashboard and contacts |
+| `app/ui/server.py` | Local UI: dashboard and contacts; delegates `/advisor`, `/present`, `/api` to `app/ui/advisor.py` |
+| `app/services/advisor/service.py` | Business Advisor entry point; `client_view` is the only data the client presentation sees |
 | `PROJECT_STATUS.md` | Where the project is and what comes next |
 
 ---
