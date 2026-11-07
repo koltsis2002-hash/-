@@ -124,7 +124,8 @@ button.card3d:active { transform: translateZ(8px) rotateX(6deg); }
 
 /* layouts */
 .split { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 56px; align-items: center; transform-style: preserve-3d; }
-.split.welcome { grid-template-columns: minmax(0, 1.3fr) minmax(0, .7fr); gap: 32px; }
+.split.welcome { grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 48px; }
+.land .welcome .hero { font-size: 60px; }
 .split.findings { grid-template-columns: minmax(0, .62fr) minmax(0, 1.38fr); gap: 40px; }
 .port .split { grid-template-columns: 1fr; gap: 32px; }
 .head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 28px; margin-bottom: 26px; }
@@ -157,6 +158,15 @@ button.card3d:active { transform: translateZ(8px) rotateX(6deg); }
   0%, 100% { transform: rotate(var(--r)) translateZ(var(--z)) translateY(0); }
   50% { transform: rotate(var(--r)) translateZ(var(--z)) translateY(-16px); }
 }
+.logo-hero { justify-self: center; width: 100%; max-width: 480px; padding: 40px 38px 34px; background: #fff; border-radius: 30px;
+  box-shadow: 0 2px 6px rgba(46, 48, 53, .08), 0 26px 40px -24px rgba(46, 48, 53, .42), 0 0 0 1px rgba(46, 48, 53, .05);
+  animation: logoFloat 8s ease-in-out infinite; }
+.logo-hero img { width: 100%; display: block; }
+@keyframes logoFloat {
+  0%, 100% { transform: translateZ(110px) rotateY(-9deg) rotateX(3deg) translateY(0); }
+  50% { transform: translateZ(110px) rotateY(-5deg) rotateX(1deg) translateY(-10px); }
+}
+.port .logo-hero { order: -1; max-width: 330px; padding: 28px 26px 22px; }
 .logo-card { position: absolute; right: 0; bottom: 10px; width: 240px; padding: 18px; background: rgba(255, 255, 255, .96); border-radius: 22px; box-shadow: var(--shadow-hi); }
 .logo-card img { width: 100%; display: block; }
 .port .logo-card { width: 190px; bottom: 0; }

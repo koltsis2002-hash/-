@@ -317,8 +317,7 @@
         <p class="sub">${esc(w.subtitle)}</p>
         <button class="btn primary big" data-act="start">${esc(w.button)}${ICON.right}</button>
       </div>
-      <div class="welcome-art">${bars3d()}
-        <div class="logo-card depth-3"><img src="/static/advisor/logo-full.png" alt="Κόλτσης Χρήστος — Insurance & Financial Advisor"></div></div>
+      <div class="logo-hero depth-3"><img src="/static/advisor/logo-full.png" alt="Κόλτσης Χρήστος — Insurance & Financial Advisor"></div>
     </div>`;
   }
 
