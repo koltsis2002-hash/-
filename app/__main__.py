@@ -45,11 +45,27 @@ def cmd_restore(settings, args):
     print(f"Restored {args.backup_file} to {settings.db_path}")
 
 
+def cmd_index_docs(settings, args):
+    from app.services.advisor.documents import DocumentIndexUnavailable
+    from app.services.context import Services
+
+    with Services.open(settings.db_path, settings.backup_dir, settings.knowledge_dir) as services:
+        try:
+            report = services.advisor.index_documents()
+        except DocumentIndexUnavailable as exc:
+            print(exc, file=sys.stderr)
+            return 1
+    print(f"Indexed {len(report.indexed)}, unchanged {len(report.unchanged)}, removed {len(report.removed)}")
+    for name, error in report.errors:
+        print(f"  {name}: {error}", file=sys.stderr)
+    return 1 if report.errors else 0
+
+
 def cmd_serve(settings, args):
     from app.ui.server import make_server
 
     maintenance.init_database(settings)
-    server = make_server(settings.db_path, settings.host, settings.port)
+    server = make_server(settings.db_path, settings.host, settings.port, settings.knowledge_dir)
     print(f"JARVIS running at http://{settings.host}:{server.server_address[1]}  (Ctrl+C to stop)")
     try:
         server.serve_forever()
@@ -69,11 +85,12 @@ def main(argv=None) -> int:
     sub.add_parser("backup", help="write a verified backup of the database")
     restore_parser = sub.add_parser("restore", help="replace the database with a backup (stop the app first)")
     restore_parser.add_argument("backup_file")
-    sub.add_parser("serve", help="start the local read-only UI (default)")
+    sub.add_parser("index-docs", help="index the product PDFs in knowledge/products/ for the Business Advisor")
+    sub.add_parser("serve", help="start the local UI (default)")
     args = parser.parse_args(argv)
 
     commands = {"init": cmd_init, "status": cmd_status, "seed": cmd_seed, "backup": cmd_backup,
-                "restore": cmd_restore, "serve": cmd_serve}
+                "restore": cmd_restore, "index-docs": cmd_index_docs, "serve": cmd_serve}
     return commands[args.command or "serve"](load_settings(), args) or 0
 
 

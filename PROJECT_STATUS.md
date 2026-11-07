@@ -19,9 +19,19 @@
 - `.gitignore` covers the virtual environment, `.env`, `config/settings.toml`, the database, backups and `.DS_Store`. No credentials exist in the code.
 - README with architecture, macOS setup, dependencies, tests and how to run.
 
+## Business Advisor | Επιχειρήσεις (requested ahead of the phase plan)
+
+A new tab for meetings with business owners, built on the Phase 1 core (same database, migrations, backup, services and UI).
+
+- Migration `0002_business_advisor.sql`: presentations, preparation, client answers, internal notes and summaries in separate tables; `documents` / `document_pages` for the product PDF index.
+- `app/services/advisor/`: question flow, needs assessment, recommendations, knowledge base, product catalog check, summary, and `matching.py` (where a reasoning engine can be connected later). Questions, rules, directions and slide texts are JSON in `app/services/advisor/data/`.
+- UI: advisor workspace under `/advisor`; client presentation under `/present/<id>` (reads only the client-safe `/api/present/<id>`); A4 summary PDF via browser print after approval.
+- Reads contacts (to prefill a meeting). It does not yet write activities, follow-ups, appointments or production back to the CRM.
+- Known gaps: the presentation is reachable only from the Mac running Jarvis (127.0.0.1), not from an iPad; no product PDFs are indexed yet, so every direction is shown as an area to explore; the advisor form flow has not been checked in a browser against the running server.
+
 ## Tests passed
 
-`python -m pytest`: **36 passed** (Python 3.11, SQLite 3.45).
+`python -m pytest`: **65 passed** (36 core + 29 Business Advisor; Python 3.11 and 3.13).
 
 | File | Covers |
 |------|--------|
@@ -31,6 +41,7 @@
 | `test_relationships.py` | Foreign keys enforced, contact timeline, cascade/unlink on delete, production blocks contact deletion, untouched leads |
 | `test_backup.py` | Backup and restore to a clean location, restore over an existing DB with safety copy, invalid backups rejected |
 | `test_app.py` | UI never imports `sqlite3`/`app.database`, sample data, today overview, UI pages and HTML escaping, CLI end to end |
+| `test_business_advisor.py` | Content validation, categories and priority order, branching, QA scenarios, owner without partners, solution matches, private data never in the client view, summary approval, product verification, knowledge search, document index, HTTP end to end |
 
 ## Known issues / limitations
 

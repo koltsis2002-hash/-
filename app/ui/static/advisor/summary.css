@@ -1,0 +1,78 @@
+/* Meeting summary document: shared by the A4 PDF, the advisor preview and the presentation overlay. */
+.sdoc {
+  --o: #e8721c; --o-hi: #f58a3a; --o-deep: #c95c0c; --o-side: #a94c08; --o-soft: #fdeee4;
+  --ink: #2e3035; --tx: #4a4e55; --mu: #6b7078; --card: #f4f3f1; --rule: #e6e4e0;
+  position: relative; overflow: hidden; width: 100%; max-width: 210mm; margin: 0 auto; padding: 14mm 16mm 10mm;
+  background: #fff; color: var(--tx); font: 10pt/1.5 "Noto Sans", -apple-system, system-ui, sans-serif; text-align: left;
+  border-radius: 2mm; box-shadow: 0 2px 6px rgba(0, 0, 0, .08), 0 24px 48px -24px rgba(0, 0, 0, .3);
+}
+.sdoc h1, .sdoc h2, .sdoc h3 { font-family: "Commissioner", "Noto Sans", sans-serif; color: var(--ink); letter-spacing: -.01em; }
+.sdoc p { margin: 0; }
+
+/* cover */
+.sd-cover { position: relative; margin-bottom: 7mm; }
+.sd-stripes { position: absolute; top: -14mm; right: -16mm; width: 74mm; height: 64mm; pointer-events: none; }
+.sd-stripes i { position: absolute; display: block; border-radius: 1mm; transform: rotate(32deg); }
+.sd-stripes i:nth-child(1) { width: 5mm; height: 82mm; left: 22mm; top: -14mm; background: var(--o); }
+.sd-stripes i:nth-child(2) { width: 9mm; height: 90mm; left: 38mm; top: -12mm; background: linear-gradient(160deg, var(--o-hi), var(--o)); }
+.sd-stripes i:nth-child(3) { width: 2.6mm; height: 52mm; left: 61mm; top: -2mm; background: var(--ink); }
+.sd-logo { width: 34mm; display: block; margin-bottom: 7mm; }
+.sd-eyebrow { text-transform: uppercase; letter-spacing: .22em; font-size: 8pt; font-weight: 700; color: var(--o); margin-bottom: 2mm !important; }
+.sdoc h1 { font-size: 27pt; font-weight: 800; line-height: 1.08; margin: 0; max-width: 128mm; }
+.sd-rule { width: 22mm; height: 1.6mm; border: 0; background: var(--o); border-radius: .6mm; margin: 5mm 0 4mm; }
+.sd-meta { color: var(--mu); }
+.sd-meta b { color: var(--ink); }
+.sd-topics { display: flex; flex-wrap: wrap; gap: 2mm; align-items: center; margin-top: 4mm; }
+.sd-label { font-size: 7.5pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--mu); margin-right: 1mm; }
+.sd-chip { background: var(--o-soft); color: var(--o-deep); font-weight: 700; font-size: 8.5pt; padding: 1mm 3.2mm; border-radius: 99mm; }
+
+/* numbered sections */
+.sd-sec { margin-bottom: 6mm; }
+.sd-checks li, .sd-todo li, .sd-steps li { break-inside: avoid; }
+.sdoc h2 { display: flex; align-items: center; gap: 3mm; font-size: 13pt; margin: 0 0 3.2mm; break-after: avoid; }
+.sd-num { font-size: 9.5pt; font-weight: 800; color: #fff; background: var(--o); border-radius: 1.6mm; padding: .5mm 2mm; box-shadow: 0 .8mm 0 var(--o-side); }
+.sd-empty { color: var(--mu); }
+
+.sd-checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 2mm; }
+.sd-checks li { position: relative; padding: 2.2mm 4mm 2.2mm 11.5mm; background: var(--card); border-radius: 2mm; color: var(--ink); }
+.sd-checks li::before { content: ""; position: absolute; left: 3.4mm; top: 2.5mm; width: 5mm; height: 5mm; border-radius: 50%; background: var(--o); }
+.sd-checks li::after { content: ""; position: absolute; left: 5.2mm; top: 3.4mm; width: 1.4mm; height: 2.5mm; border: solid #fff; border-width: 0 .6mm .6mm 0; transform: rotate(45deg); }
+
+.sd-dirs { display: grid; gap: 3mm; }
+.sd-dir { display: grid; grid-template-columns: 10mm 1fr; gap: 3mm; padding: 3.4mm 5mm; border: .3mm solid var(--rule); border-left: 1.6mm solid var(--o); border-radius: 2.5mm; background: #fff; break-inside: avoid; }
+.sd-dir-n { font-family: "Commissioner", "Noto Sans", sans-serif; font-size: 22pt; font-weight: 800; color: var(--o); line-height: 1; }
+.sd-tag { font-size: 7.5pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--o-deep); margin-bottom: 1mm !important; }
+.sd-dir h3 { margin: 0 0 1.5mm; font-size: 11.5pt; line-height: 1.25; }
+.sd-solution { display: inline-block; margin-top: 2.2mm !important; font-size: 8.3pt; font-weight: 600; color: var(--mu); background: var(--card); padding: 1mm 2.6mm; border-radius: 1.5mm; }
+
+.sd-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; }
+.sd-todo { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.8mm; }
+.sd-todo li { position: relative; padding-left: 7mm; }
+.sd-todo li::before { content: ""; position: absolute; left: 0; top: 1mm; width: 3.4mm; height: 3.4mm; border: .45mm solid var(--o); border-radius: .8mm; }
+.sd-steps { list-style: none; margin: 0; padding: 0; counter-reset: st; }
+.sd-steps li { position: relative; padding: 0 0 3.4mm 9mm; counter-increment: st; }
+.sd-steps li::before { content: counter(st); position: absolute; left: 0; top: 0; width: 5.6mm; height: 5.6mm; border-radius: 50%; background: var(--ink); color: #fff; font-size: 8pt; font-weight: 700; display: grid; place-items: center; }
+.sd-steps li:first-child::before { background: var(--o); }
+.sd-steps li:not(:last-child)::after { content: ""; position: absolute; left: 2.6mm; top: 6.2mm; bottom: .6mm; width: .4mm; background: var(--rule); }
+
+/* closing */
+.sd-quote { position: relative; margin: 0 0 6mm; padding: 4mm 6mm 4mm 14mm; border: .5mm solid var(--o); border-radius: 2.5mm; font-weight: 700; color: var(--ink); break-inside: avoid; }
+.sd-quote::before { content: ""; position: absolute; left: 5mm; top: 3.4mm; bottom: 3.4mm; width: 1.6mm; background: var(--o); transform: skewX(-18deg); border-radius: .4mm; }
+.sd-quote span { display: block; }
+.sd-end { display: grid; grid-template-columns: 1fr 54mm; gap: 6mm; align-items: center; padding: 6mm 7mm; border-radius: 3mm; color: #fff; background: linear-gradient(160deg, var(--o-hi), var(--o) 60%, var(--o-deep)); break-inside: avoid; }
+.sd-closing { font-family: "Commissioner", "Noto Sans", sans-serif; font-weight: 800; font-size: 14pt; line-height: 1.2; margin-bottom: 2.6mm !important; }
+.sd-contact b { color: #fff; }
+.sd-partner { width: 100%; display: block; background: #fff; border-radius: 2mm; padding: 2.6mm 3mm; }
+.sd-legal { margin-top: 4mm !important; font-size: 7.5pt; color: var(--mu); text-align: center; }
+
+@media (max-width: 620px) {
+  .sdoc { padding: 9mm 7mm 7mm; }
+  .sd-cols, .sd-end { grid-template-columns: 1fr; }
+  .sd-stripes { opacity: .35; }
+}
+@page { size: A4; margin: 10mm 0; }
+@media print {
+  .sdoc { max-width: none; padding: 2mm 16mm 4mm; border-radius: 0; box-shadow: none; }
+  .sd-stripes { top: -12mm; }
+  .sdoc, .sdoc * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

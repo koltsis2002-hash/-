@@ -13,6 +13,7 @@ class Settings:
     backup_dir: Path
     host: str
     port: int
+    knowledge_dir: Path = PROJECT_ROOT / "knowledge"
 
 
 def _resolve(path) -> Path:
@@ -29,4 +30,5 @@ def load_settings(env=None) -> Settings:
         backup_dir=_resolve(env.get("JARVIS_BACKUP_DIR", values.get("backup_dir", "backups"))),
         host=env.get("JARVIS_HOST", values.get("host", "127.0.0.1")),
         port=int(env.get("JARVIS_PORT", values.get("port", 8765))),
+        knowledge_dir=_resolve(env.get("JARVIS_KNOWLEDGE_DIR", values.get("knowledge_dir", "knowledge"))),
     )

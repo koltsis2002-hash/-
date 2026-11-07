@@ -24,7 +24,9 @@ CLI (app/__main__.py) ─┴─>  Services (app/services)  ─>  Repositories (a
 | `app/models` | Dataclasses for Contact, Activity, FollowUp, Appointment, Goal, Production and their allowed values. |
 | `app/database` | Connection setup, numbered SQL migrations, repositories (CRUD and queries), backup/restore. |
 | `app/services` | Business operations used by the UI/CLI: CRM, planner, goals/production, maintenance, sample data. |
-| `app/ui` | Local read-only web UI (Dashboard, Contacts). It imports services only; a test enforces this. |
+| `app/ui` | Local web UI (Dashboard, Contacts, Business Advisor). It imports services only; a test enforces this. |
+| `app/services/advisor` | Business Advisor logic; editable questions, rules and slide texts in `data/*.json`. |
+| `knowledge/products/` | Official product PDFs and `catalog.json` for the Business Advisor (git-ignored). |
 | `data/` | The live database (git-ignored). |
 | `backups/` | Database backups (git-ignored). |
 | `config/` | `settings.example.toml`. Your own `settings.toml` is git-ignored. |
@@ -63,6 +65,7 @@ Optional: `cp config/settings.example.toml config/settings.toml` to change the d
 
 - Runtime: none beyond the Python 3.11+ standard library.
 - Development: `pytest` (in `requirements.txt`).
+- Optional: `pypdf`, only for indexing product PDFs in the Business Advisor knowledge base.
 
 ## Running the tests
 
@@ -78,6 +81,7 @@ python -m app init          # create / migrate data/jarvis.db
 python -m app seed          # load 30 fictional contacts with activity (refuses if contacts exist)
 python -m app status        # schema version and row count per table
 python -m app               # start the UI, then open http://127.0.0.1:8765
+python -m app index-docs    # index the product PDFs in knowledge/products/ (needs: pip install pypdf)
 python -m app backup        # write a verified backup to backups/
 python -m app restore backups/<file>.db   # restore (stop the UI first; the current DB is saved first)
 ```

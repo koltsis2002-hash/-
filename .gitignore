@@ -18,3 +18,7 @@ data/*
 backups/*
 !data/.gitkeep
 !backups/.gitkeep
+
+# Business Advisor: official product documents stay local
+knowledge/products/*
+!knowledge/products/README.md
