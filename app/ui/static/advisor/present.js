@@ -184,6 +184,20 @@
   }
 
   /* ----- layout ------------------------------------------------------------------------------- */
+  /* Each slide is designed on a fixed canvas (landscape or portrait) and scaled as a whole to the
+     screen, like a keynote slide; slides change with a 3D turn. */
+
+  const CANVAS = { land: [1280, 740], port: [860, 1060] };
+  let orientation = "land";
+
+  function shell() {
+    app.innerHTML = `
+      <header class="topbar"><div class="brand"><img src="/static/advisor/logo-mark.png" alt="Κόλτσης Χρήστος"><span class="section" id="section"></span></div>
+        <div class="tools"><button class="icon-btn" data-act="fullscreen" title="Πλήρης οθόνη" aria-label="Πλήρης οθόνη">${ICON.full}</button>
+        <button class="icon-btn" data-act="exit" title="Έξοδος" aria-label="Έξοδος">${ICON.close}</button></div></header>
+      <main class="stage" id="stage"><div class="viewport" id="viewport"></div></main>
+      <footer class="bottombar" id="bottombar"></footer>`;
+  }
 
   function render(animate) {
     if (ended) {
@@ -192,16 +206,41 @@
         <button class="btn" data-act="resume">Επιστροφή στην παρουσίαση</button></div></div>`;
       return;
     }
+    if (!document.getElementById("viewport")) shell();
     sub = Math.min(sub, subCount(screen) - 1);
-    app.innerHTML = `
-      <header class="topbar"><div class="brand"><img src="/static/advisor/logo-mark.png" alt="Κόλτσης Χρήστος"><span class="section">${esc(sectionLabel())}</span></div>
-        <div class="tools"><button class="icon-btn" data-act="fullscreen" title="Πλήρης οθόνη" aria-label="Πλήρης οθόνη">${ICON.full}</button>
-        <button class="icon-btn" data-act="exit" title="Έξοδος" aria-label="Έξοδος">${ICON.close}</button></div></header>
-      <main class="stage" id="stage"><div class="screen s-${S.content.screens[screen].id} ${animate ? `enter-${dir}` : ""}" id="screen">${SCREENS[screen]()}</div></main>
-      ${bottombar()}
-      ${overlay ? overlayHtml() : ""}`;
+    setOrientation();
+    document.getElementById("section").textContent = sectionLabel();
+    document.getElementById("bottombar").innerHTML = bottombar();
+    const vp = document.getElementById("viewport");
+    const old = document.getElementById("screen");
+    const slide = document.createElement("div");
+    slide.className = `slide s-${S.content.screens[screen].id}`;
+    slide.innerHTML = `<div class="tilt"><div class="inner">${SCREENS[screen]()}</div></div>`;
+    if (old) {
+      old.removeAttribute("id");
+      old.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id"));
+      if (animate) {
+        old.classList.add("leaving", `leave-${dir}`);
+        setTimeout(() => old.remove(), 750);
+      } else {
+        old.remove();
+      }
+    }
+    slide.id = "screen";
+    if (animate) slide.classList.add(`enter-${dir}`);
+    vp.appendChild(slide);
+    document.querySelector(".overlay")?.remove();
+    if (overlay) app.insertAdjacentHTML("beforeend", overlayHtml());
     fit();
     if (screen === QUESTIONS) focusQuestion();
+  }
+
+  function setOrientation() {
+    const stage = document.getElementById("stage");
+    if (!stage) return;
+    orientation = stage.clientWidth / Math.max(stage.clientHeight, 1) >= 1.05 ? "land" : "port";
+    app.classList.toggle("land", orientation === "land");
+    app.classList.toggle("port", orientation === "port");
   }
 
   function sectionLabel() {
@@ -221,62 +260,80 @@
   function bottombar() {
     const segs = S.content.screens.map((s, i) =>
       `<button data-act="goto" data-i="${i}" class="${i < screen ? "done" : ""} ${i === screen ? "current" : ""}" title="${esc(s.eyebrow)}" aria-label="${esc(s.eyebrow)}"><span></span></button>`).join("");
-    return `<footer class="bottombar"><div class="progress">${segs}</div><span class="progress-label" id="plabel">${progressLabel()}</span>
+    return `<div class="progress">${segs}</div><span class="progress-label" id="plabel">${progressLabel()}</span>
       <span class="saved" id="saved"></span>
       <div class="navbtns"><button class="btn quiet" data-act="prev" ${screen === 0 ? "disabled" : ""}>${ICON.left}<span>Πίσω</span></button>
-      <button class="btn dark" data-act="next" ${screen === LAST ? "disabled" : ""}><span>Επόμενο</span>${ICON.right}</button></div></footer>`;
+      <button class="btn dark" data-act="next" ${screen === LAST ? "disabled" : ""}><span>Επόμενο</span>${ICON.right}</button></div>`;
   }
 
-  /* Every slide fits the screen: if content is taller than the stage, it is scaled down instead of scrolling. */
   function fit() {
     const stage = document.getElementById("stage");
-    const box = document.getElementById("screen");
-    if (!stage || !box) return;
-    box.style.zoom = 1;
-    stage.classList.remove("overflow");
-    for (let i = 0; i < 4; i++) {
-      const have = stage.clientHeight;
-      const need = box.getBoundingClientRect().height;
-      if (need <= have + 1) return;
-      const zoom = (parseFloat(box.style.zoom) || 1) * (have / need) * 0.985;
-      if (zoom < 0.55) { box.style.zoom = 0.55; stage.classList.add("overflow"); return; }
-      box.style.zoom = zoom;
-    }
+    const vp = document.getElementById("viewport");
+    if (!stage || !vp) return;
+    setOrientation();
+    const [W, H] = CANVAS[orientation];
+    const scale = Math.min(stage.clientWidth / W, stage.clientHeight / H);
+    vp.style.width = `${W}px`;
+    vp.style.height = `${H}px`;
+    vp.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    const slide = document.getElementById("screen");
+    const inner = slide && slide.querySelector(".inner");
+    if (!inner) return;
+    inner.style.transform = "";
+    const need = inner.scrollHeight;
+    const have = inner.clientHeight;
+    if (need > have + 1) inner.style.transform = `scale(${Math.max(0.6, have / need)})`;
   }
   window.addEventListener("resize", () => { clearTimeout(fit.t); fit.t = setTimeout(fit, 120); });
 
+  /* Gentle 3D tilt that follows the mouse on desktop; touch devices keep the slide still. */
+  app.addEventListener("pointermove", (ev) => {
+    if (ev.pointerType !== "mouse") return;
+    const vp = document.getElementById("viewport");
+    if (!vp) return;
+    const x = ev.clientX / window.innerWidth - 0.5;
+    const y = ev.clientY / window.innerHeight - 0.5;
+    vp.style.setProperty("--ry", `${(x * 5).toFixed(2)}deg`);
+    vp.style.setProperty("--rx", `${(-y * 4).toFixed(2)}deg`);
+  });
+
   /* ----- screens ------------------------------------------------------------------------------ */
+
+  const bars3d = () => `<div class="bars3d" aria-hidden="true">
+      <div class="bar3d b1"><i class="f"></i><i class="s"></i></div>
+      <div class="bar3d b2"><i class="f"></i><i class="s"></i></div>
+      <div class="bar3d b3"><i class="f"></i><i class="s"></i></div></div>`;
 
   function sWelcome() {
     const w = S.content.welcome;
     const b = S.business;
     const who = [b.business_name && `<b>${esc(b.business_name)}</b>`, b.owner_name && esc(b.owner_name)].filter(Boolean).join(" · ");
-    return `<div class="welcome">
-      <div class="welcome-text">
-        <p class="eyebrow rise">${greekDate(S.meeting_date)}</p>
-        ${who ? `<p class="business rise">${who}</p>` : ""}
-        <h1 class="title rise">${w.lines.map((l) => `<span>${esc(l)}</span>`).join("")}</h1>
-        <hr class="rule rise">
-        <p class="sub rise">${esc(w.subtitle)}</p>
-        <button class="btn primary big rise" data-act="start">${esc(w.button)}${ICON.right}</button>
+    return `<div class="split welcome">
+      <div class="welcome-text depth-2">
+        <p class="eyebrow">${greekDate(S.meeting_date)}</p>
+        ${who ? `<p class="business">${who}</p>` : ""}
+        <h1 class="hero">${w.lines.map((l) => `<span>${esc(l)}</span>`).join("")}</h1>
+        <hr class="rule">
+        <p class="sub">${esc(w.subtitle)}</p>
+        <button class="btn primary big" data-act="start">${esc(w.button)}${ICON.right}</button>
       </div>
-      <div class="stripes" aria-hidden="true"><i></i><i></i><i></i></div>
-      <img class="logo" src="/static/advisor/logo-full.png" alt="Κόλτσης Χρήστος — Insurance & Financial Advisor">
+      <div class="welcome-art">${bars3d()}
+        <div class="logo-card depth-3"><img src="/static/advisor/logo-full.png" alt="Κόλτσης Χρήστος — Insurance & Financial Advisor"></div></div>
     </div>`;
   }
 
   function sAbout() {
     const a = S.content.advisor;
-    return `<div class="about">
-      <div class="rise about-logo"><img class="logo-full" src="/static/advisor/logo-full.png" alt="Κόλτσης Χρήστος — Insurance & Financial Advisor">
+    return `<div class="split about">
+      <div class="logo-card big depth-3"><img class="logo-full" src="/static/advisor/logo-full.png" alt="Κόλτσης Χρήστος — Insurance & Financial Advisor">
         <img class="partner" src="/static/advisor/nn-partner.png" alt="NN — ${esc(a.partner)}"></div>
-      <div>
-        <p class="eyebrow rise">Ποιος είμαι</p>
-        <h1 class="name rise">${esc(a.name)}</h1>
-        <p class="role rise">${esc(a.title)}</p>
-        <div class="creds rise">${a.credentials.map((c) => `<div class="cred"><b>${esc(c.title)}</b><span>${esc(c.detail)}</span></div>`).join("")}</div>
-        <blockquote class="slash philosophy rise">${a.philosophy.map((l) => `<span>${esc(l)}</span>`).join("")}</blockquote>
-        <div class="contact rise"><span><b>Τ.</b> ${esc(a.phone)}</span><span>${esc(a.email)}</span></div>
+      <div class="depth-1">
+        <p class="eyebrow">Ποιος είμαι</p>
+        <h1 class="title">${esc(a.name)}</h1>
+        <p class="lead">${esc(a.title)}</p>
+        <div class="creds">${a.credentials.map((c) => `<div class="card3d cred"><b>${esc(c.title)}</b><span>${esc(c.detail)}</span></div>`).join("")}</div>
+        <blockquote class="slash">${a.philosophy.map((l) => `<span>${esc(l)}</span>`).join("")}</blockquote>
+        <p class="contact"><span><b>Τ.</b> ${esc(a.phone)}</span><span>${esc(a.email)}</span></p>
       </div></div>`;
   }
 
@@ -286,15 +343,14 @@
     const tiles = S.axes.map((a) => {
       const item = c.items[a.id] || {};
       const on = ui.pick.includes(a.id);
-      return `<button class="choice rise ${on ? "on" : ""}" data-act="pick-topic" data-axis="${a.id}" role="checkbox" aria-checked="${on}">
-        <span class="ic">${ICON[item.icon] || ""}</span><span class="txt"><b>${esc(a.title)}</b><small>${esc(item.text)}</small></span>
+      return `<button class="card3d choice ${on ? "on" : ""}" data-act="pick-topic" data-axis="${a.id}" role="checkbox" aria-checked="${on}">
+        <span class="ic">${ICON[item.icon] || ""}</span><b>${esc(a.title)}</b><small>${esc(item.text)}</small>
         <span class="tick">${ICON.check}</span></button>`;
     }).join("");
-    return `<div class="slide-head"><h1 class="title">${esc(c.title)}</h1>
-      <p class="lead">${esc(c.lead)}</p></div>
-      <div class="choices">${tiles}</div>
-      <div class="pick-row"><span class="muted" id="pick-count">${pickCount()}</span>
-        <button class="btn primary" data-act="next" ${ui.pick.length ? "" : "disabled"} id="pick-go">Συνέχεια${ICON.right}</button></div>`;
+    return `<div class="head-row"><h1 class="title">${esc(c.title)}</h1><p class="lead">${esc(c.lead)}</p></div>
+      <div class="choices">${tiles}
+        <button class="card3d choice go" data-act="next" id="pick-go" ${ui.pick.length ? "" : "disabled"}>
+          <span class="count" id="pick-count">${pickCount()}</span><span class="go-label">Συνέχεια ${ICON.right}</span></button></div>`;
   }
 
   function pickCount() {
@@ -306,17 +362,18 @@
     const t = topicSlides()[sub];
     if (!t) return "";
     const s = t.slide;
-    const cards = (s.cards || []).map((c) => `<article class="tcard rise">
+    const cards = (s.cards || []).map((c) => `<article class="card3d tcard">
         <p class="tag">${esc(c.tag)}</p><h3>${esc(c.title)}</h3>
         ${c.text ? `<p>${esc(c.text)}</p>` : ""}
         ${c.uses ? `<div class="uses">${c.uses.map((u, i) => `<div><b>0${i + 1}</b>${esc(u)}</div>`).join("")}</div>` : ""}
         ${c.example ? `<p class="example"><b>Για παράδειγμα</b>${esc(c.example)}</p>` : ""}</article>`).join("");
-    return `<div class="slide-head"><p class="eyebrow">${esc(axisTitle(t.axis))}${t.n > 1 ? ` · ${t.i + 1}/${t.n}` : ""}</p>
-      <h1 class="title">${esc(s.title)}</h1><p class="lead">${esc(s.lead)}</p></div>
-      ${cards ? `<div class="tcards n${(s.cards || []).length}">${cards}</div>` : ""}
-      ${s.diagram === "partners" ? partnerDiagram() : ""}
-      ${s.term ? `<p class="term"><b>${esc(s.term.word)}:</b> ${esc(s.term.meaning)}</p>` : ""}
-      ${s.note ? `<p class="slash note-slash">${esc(s.note)}</p>` : ""}`;
+    return `<div class="split topic">
+      <div class="depth-1"><p class="eyebrow">${esc(axisTitle(t.axis))}${t.n > 1 ? ` · ${t.i + 1}/${t.n}` : ""}</p>
+        <h1 class="title">${esc(s.title)}</h1><p class="lead">${esc(s.lead)}</p>
+        ${s.term ? `<p class="term"><b>${esc(s.term.word)}:</b> ${esc(s.term.meaning)}</p>` : ""}
+        ${s.note ? `<p class="slash small">${esc(s.note)}</p>` : ""}</div>
+      <div class="depth-2">${cards ? `<div class="tcards n${(s.cards || []).length}">${cards}</div>` : ""}
+        ${s.diagram === "partners" ? partnerDiagram() : ""}</div></div>`;
   }
 
   function partnerDiagram() {
@@ -325,13 +382,96 @@
     return `<div class="diagram" id="diagram"><div class="seg" role="group" aria-label="Σενάριο">
         <button data-act="diagram" data-mode="without" class="${mode === "without" ? "on" : ""}">${esc(d.without.label)}</button>
         <button data-act="diagram" data-mode="with" class="${mode === "with" ? "on" : ""}">${esc(d.with.label)}</button></div>
-      <div class="flow ${mode}">${d[mode].steps.map((s) => `<div>${esc(s)}</div>`).join("")}</div></div>`;
+      <div class="flow ${mode}">${d[mode].steps.map((s, i) => `<div class="card3d"><b>0${i + 1}</b>${esc(s)}</div>`).join("")}</div></div>`;
   }
 
   function sQuestions() {
-    return `<div class="q-head"><h1 class="title">${esc(S.content.questions.title)}</h1>
-      <div class="axes" id="axes">${axesChips()}</div></div>
-      <div id="qzone">${qZone()}</div>`;
+    return `<div class="split questions">
+      <div class="q-side depth-1"><h1 class="title">${esc(S.content.questions.title)}</h1>
+        <div class="axes" id="axes">${axesChips()}</div></div>
+      <div id="qzone" class="depth-2">${qZone()}</div></div>`;
+  }
+
+  function sFindings() {
+    const f = S.content.findings;
+    if (!S.flow.handled) {
+      return `<div class="center-col"><h1 class="title">${esc(f.title)}</h1><div class="card3d empty-state"><p class="lead">${esc(f.empty)}</p>
+        <button class="btn primary" data-act="goto" data-i="${QUESTIONS}">Στις ερωτήσεις</button></div></div>`;
+    }
+    const legend = S.levels.map((l) => `<span class="lv-${l.id}"><i></i>${esc(l.label)}</span>`).join("");
+    const cols = S.pillars.filter((p) => S.needs.some((n) => n.pillar === p.id)).map((p) => {
+      const tiles = S.needs.filter((n) => n.pillar === p.id).map((n) =>
+        `<button class="tile ${n.level}" data-act="need" data-id="${n.id}"><span>${esc(n.title)}</span><small>${esc(n.level_label)}</small></button>`).join("");
+      return `<div class="col"><h3>${esc(p.title)}</h3><div class="tiles">${tiles}</div></div>`;
+    }).join("");
+    return `<div class="split findings">
+      <div class="depth-1"><h1 class="title">${esc(f.title)}</h1><p class="lead">${esc(f.lead)}</p>
+        <div class="legend">${legend}</div><p class="muted small">Πατήστε ένα θέμα για λεπτομέρειες.</p></div>
+      <div class="map depth-2">${cols}</div></div>`;
+  }
+
+  function sSolutions() {
+    const c = S.content.solutions;
+    const recs = S.recommendations;
+    if (!recs.length) {
+      return `<div class="center-col"><h1 class="title">${esc(c.title)}</h1>
+        <div class="card3d empty-state"><p class="lead">${esc(c.empty)}</p></div><p class="disclaimer">${esc(S.solution_labels.disclaimer)}</p></div>`;
+    }
+    const r = recs[sub];
+    const status = r.products.length
+      ? `<div class="status-pill doc">${esc(r.status_label)}${r.products.map((p) => `<small><b>${esc(p.name)}</b>${p.provider ? ` · ${esc(p.provider)}` : ""}</small>`).join("")}</div>`
+      : `<div class="status-pill">${esc(r.status_label)}</div>`;
+    const documented = r.products.flatMap((p) => p.benefits);
+    const limits = r.products.flatMap((p) => p.limitations);
+    const more = sub === recs.length - 1 && S.more_topics.length
+      ? `<div class="more-topics"><b class="muted">Επίσης για επόμενη συζήτηση:</b>${S.more_topics.map((t) => `<span>${esc(t)}</span>`).join("")}</div>` : "";
+    return `<div class="split solution">
+      <div class="depth-1"><p class="eyebrow">Κατεύθυνση ${sub + 1} από ${recs.length} · ${esc(r.need_title)}</p>
+        <h1 class="title">${esc(r.title)}</h1>
+        <p class="lbl">Γιατί έχει σημασία</p><p class="lead dark">${esc(r.why)}</p>
+        <p class="lbl">Κατεύθυνση προστασίας</p><p>${esc(r.direction)}</p>${status}</div>
+      <div class="card3d sol-side depth-2">
+        <p class="lbl">Πιθανά οφέλη</p>${list(r.benefits)}
+        ${documented.length ? `<p class="lbl">Από τους όρους του προϊόντος</p><ul>${documented.map((b) => `<li>${esc(b.text)} <span class="muted">(${esc(b.source)})</span></li>`).join("")}</ul>` : ""}
+        <p class="lbl">Τι εξετάζουμε πριν από οποιαδήποτε πρόταση</p>${list(r.examine)}
+        ${limits.length ? `<p class="lbl">Περιορισμοί από τους όρους</p><ul>${limits.map((l) => `<li>${esc(l.text)} <span class="muted">(${esc(l.source)})</span></li>`).join("")}</ul>` : ""}
+        ${more}<p class="disclaimer">${esc(S.solution_labels.disclaimer)}</p></div></div>`;
+  }
+
+  const shortList = (items, max = 5) => {
+    const shown = (items || []).slice(0, max);
+    const rest = (items || []).length - shown.length;
+    return shown.length ? `<ul>${shown.map((x) => `<li>${esc(x)}</li>`).join("")}${rest > 0 ? `<li class="muted">και ${rest} ακόμη στην περίληψη</li>` : ""}</ul>` : '<p class="muted">—</p>';
+  };
+
+  function sRecap() {
+    const s = S.summary.content;
+    return `<div class="head-row"><h1 class="title">${esc(S.content.recap.title)}</h1></div>
+      <div class="recap">
+        <section class="card3d"><span class="num">01</span><h3>Θέματα που συζητήσαμε</h3>${shortList(s.topics)}</section>
+        <section class="card3d"><span class="num">02</span><h3>Οι ανάγκες που εντοπίσαμε</h3>${shortList(s.priorities, 4)}</section>
+        <section class="card3d"><span class="num">03</span><h3>Τι χρειάζεται να διερευνήσουμε</h3>${shortList(s.information_needed)}</section>
+      </div>`;
+  }
+
+  function sNext() {
+    const n = S.content.next;
+    return `<div class="head-row"><h1 class="title">${esc(n.title)}</h1></div>
+      <div class="process">${n.process.map((p, i) => `<div class="card3d pstep ${i === 0 ? "now" : ""}">${i === 0 ? '<span class="today">Σήμερα</span>' : ""}<b>${esc(p.number)}</b><strong>${esc(p.title)}</strong><span>${esc(p.text)}</span></div>`).join("")}</div>
+      <div class="steps"><h3>Πώς προχωράμε</h3>${list(n.steps, "ol")}</div>`;
+  }
+
+  function sClosing() {
+    const n = S.content.next;
+    const a = S.content.advisor;
+    return `<div class="split closing">
+      <div class="welcome-art">${bars3d()}
+        <div class="logo-card depth-3"><img src="/static/advisor/logo-full.png" alt="Κόλτσης Χρήστος — Insurance & Financial Advisor"></div></div>
+      <div class="depth-2"><h1 class="hero small">${n.closing.map((l) => `<span>${esc(l)}</span>`).join("")}</h1>
+        <p class="contact"><span><b>Τ.</b> ${esc(a.phone)}</span><span>${esc(a.email)}</span></p>
+        <div class="acts"><button class="btn" data-act="summary">Προβολή περίληψης</button>
+          <button class="btn primary" data-act="export">Εξαγωγή PDF</button></div>
+        <p class="disclaimer">${esc(S.content.footer)}</p></div></div>`;
   }
 
   function axesChips() {
@@ -348,7 +488,7 @@
     const qs = questions();
     if (sub >= qs.length) {
       const open = qs.filter((q) => !answerOf(q.id)).length;
-      return `<div class="qcard q-done"><div class="check-circle">${ICON.check}</div>
+      return `<div class="qcard card3d q-done"><div class="check-circle">${ICON.check}</div>
         <h2>Ευχαριστώ για τις απαντήσεις!</h2>
         <p>${open ? `Μένουν ${open} ερωτήσεις — μπορούμε να επιστρέψουμε σε αυτές όποτε θέλετε.` : "Ας δούμε τι διαπιστώσαμε."}</p>
         <div class="q-actions center">${open ? `<button class="btn" data-act="first-open">Στις υπόλοιπες ερωτήσεις</button>` : ""}
@@ -360,7 +500,7 @@
     const note = ui.note[q.id] ?? (a && a.note) ?? "";
     const noteOpen = ui.noteOpen === q.id || Boolean(note);
     const needsSubmit = q.type === "multi" || q.type === "number";
-    return `<div class="qcard" data-q="${esc(q.id)}">
+    return `<div class="qcard card3d" data-q="${esc(q.id)}">
       <p class="axis"><span>${esc(axisTitle(q.axis))}</span><span>${sub + 1} / ${qs.length}</span></p>
       ${q.hint ? `<p class="hint">${esc(q.hint)}</p>` : ""}
       <h2 id="qtext">${esc(q.text)}</h2>
@@ -396,84 +536,6 @@
     return `<div class="number"><button class="step" data-act="step" data-d="-1" aria-label="Μείωση">−</button>
       <input id="num" inputmode="numeric" autocomplete="off" aria-labelledby="qtext" value="${value == null ? "" : esc(value)}" placeholder="0">
       <button class="step" data-act="step" data-d="1" aria-label="Αύξηση">+</button><span class="unit">${esc(q.unit || "")}</span></div>${suggested}`;
-  }
-
-  function sFindings() {
-    const f = S.content.findings;
-    const head = `<div class="slide-head"><h1 class="title">${esc(f.title)}</h1>`;
-    if (!S.flow.handled) {
-      return `${head}</div><div class="empty-state"><p class="lead">${esc(f.empty)}</p>
-        <button class="btn primary" data-act="goto" data-i="${QUESTIONS}">Στις ερωτήσεις</button></div>`;
-    }
-    const legend = S.levels.map((l) => `<span class="lv-${l.id}"><i></i>${esc(l.label)}</span>`).join("");
-    const cols = S.pillars.filter((p) => S.needs.some((n) => n.pillar === p.id)).map((p) => {
-      const tiles = S.needs.filter((n) => n.pillar === p.id).map((n) =>
-        `<button class="tile ${n.level}" data-act="need" data-id="${n.id}"><span>${esc(n.title)}</span><small>${esc(n.level_label)}</small></button>`).join("");
-      return `<div class="col"><h3>${esc(p.title)}</h3><div class="tiles">${tiles}</div></div>`;
-    }).join("");
-    return `${head}<p class="lead">${esc(f.lead)} <span class="muted">Πατήστε ένα θέμα για λεπτομέρειες.</span></p></div>
-      <div class="legend">${legend}</div><div class="map">${cols}</div>`;
-  }
-
-  function sSolutions() {
-    const c = S.content.solutions;
-    const recs = S.recommendations;
-    if (!recs.length) {
-      return `<div class="slide-head"><h1 class="title">${esc(c.title)}</h1></div>
-        <div class="empty-state"><p class="lead">${esc(c.empty)}</p></div><p class="disclaimer">${esc(S.solution_labels.disclaimer)}</p>`;
-    }
-    const r = recs[sub];
-    const status = r.products.length
-      ? `<div class="status-pill doc">${esc(r.status_label)}${r.products.map((p) => `<small><b>${esc(p.name)}</b>${p.provider ? ` · ${esc(p.provider)}` : ""}</small>`).join("")}</div>`
-      : `<div class="status-pill">${esc(r.status_label)}</div>`;
-    const documented = r.products.flatMap((p) => p.benefits);
-    const limits = r.products.flatMap((p) => p.limitations);
-    const more = sub === recs.length - 1 && S.more_topics.length
-      ? `<div class="more-topics"><b class="muted">Επίσης για επόμενη συζήτηση:</b>${S.more_topics.map((t) => `<span>${esc(t)}</span>`).join("")}</div>` : "";
-    return `<div class="slide-head"><p class="eyebrow">Κατεύθυνση ${sub + 1} από ${recs.length} · ${esc(r.need_title)}</p>
-      <h1 class="title">${esc(r.title)}</h1></div>
-      <div class="sol-grid">
-        <div class="sol-main rise">
-          <p class="lbl">Γιατί έχει σημασία</p><p class="big">${esc(r.why)}</p>
-          <p class="lbl">Κατεύθυνση προστασίας</p><p>${esc(r.direction)}</p>
-          ${status}
-        </div>
-        <div class="sol-side rise">
-          <p class="lbl">Πιθανά οφέλη</p>${list(r.benefits)}
-          ${documented.length ? `<p class="lbl">Από τους όρους του προϊόντος</p><ul>${documented.map((b) => `<li>${esc(b.text)} <span class="muted">(${esc(b.source)})</span></li>`).join("")}</ul>` : ""}
-          <p class="lbl">Τι εξετάζουμε πριν από οποιαδήποτε πρόταση</p>${list(r.examine)}
-          ${limits.length ? `<p class="lbl">Περιορισμοί από τους όρους</p><ul>${limits.map((l) => `<li>${esc(l.text)} <span class="muted">(${esc(l.source)})</span></li>`).join("")}</ul>` : ""}
-        </div>
-      </div>${more}<p class="disclaimer">${esc(S.solution_labels.disclaimer)}</p>`;
-  }
-
-  function sRecap() {
-    const s = S.summary.content;
-    return `<div class="slide-head"><h1 class="title">${esc(S.content.recap.title)}</h1></div>
-      <div class="next-grid">
-        <section class="rise"><h3>Θέματα που συζητήσαμε</h3>${list(s.topics)}</section>
-        <section class="rise"><h3>Οι ανάγκες που εντοπίσαμε</h3>${list(s.priorities)}</section>
-        <section class="rise"><h3>Τι χρειάζεται να διερευνήσουμε</h3>${list(s.information_needed)}</section>
-      </div>`;
-  }
-
-  function sNext() {
-    const n = S.content.next;
-    return `<div class="slide-head"><h1 class="title">${esc(n.title)}</h1></div>
-      <div class="process">${n.process.map((p, i) => `<div class="${i === 0 ? "now" : ""} rise"><b>${esc(p.number)}</b><strong>${esc(p.title)}</strong><span>${esc(p.text)}</span></div>`).join("")}</div>
-      <div class="steps rise"><h3>Πώς προχωράμε</h3>${list(n.steps, "ol")}</div>`;
-  }
-
-  function sClosing() {
-    const n = S.content.next;
-    const a = S.content.advisor;
-    return `<div class="closing-slide">
-      <img class="logo-full rise" src="/static/advisor/logo-full.png" alt="Κόλτσης Χρήστος — Insurance & Financial Advisor">
-      <h1 class="title rise">${n.closing.map(esc).join("<br>")}</h1>
-      <p class="contact rise"><span><b>Τ.</b> ${esc(a.phone)}</span><span>${esc(a.email)}</span></p>
-      <div class="acts rise"><button class="btn" data-act="summary">Προβολή περίληψης</button>
-        <button class="btn primary" data-act="export">Εξαγωγή PDF</button></div>
-      <p class="disclaimer">${esc(S.content.footer)}</p></div>`;
   }
 
   const SCREENS = [sWelcome, sAbout, sInterests, sTopics, sQuestions, sFindings, sSolutions, sRecap, sNext, sClosing];
